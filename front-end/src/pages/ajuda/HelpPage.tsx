@@ -32,6 +32,7 @@ export function HelpPage() {
       <p>Entenda cada etapa da sua consultoria.</p>
       <nav className="help-page__nav" aria-label="Seções da central de ajuda">
         <a href="#perguntas">Dúvidas frequentes</a>
+        <a href="#preparar-foto">Prepare sua foto</a>
       </nav>
       <section id="perguntas" aria-labelledby="faq-title">
         <h2 id="faq-title">Dúvidas frequentes</h2>
@@ -41,6 +42,19 @@ export function HelpPage() {
             <p>{answer}</p>
           </details>
         ))}
+        <a className="help-page__back-link" href="#preparar-foto">Ver orientações para preparar a foto</a>
+      </section>
+      <section id="preparar-foto" aria-labelledby="photo-help-title">
+        <h2 id="photo-help-title">Prepare sua foto</h2>
+        <ul className="photo-guidance">
+          <li><strong>Iluminação:</strong> prefira luz uniforme de frente e evite sombras fortes no rosto.</li>
+          <li><strong>Enquadramento:</strong> mantenha o rosto visível e de frente, sem cortes na cabeça.</li>
+          <li><strong>Posicionamento:</strong> centralize o rosto e mantenha uma distância que permita visualizar o cabelo e os traços claramente.</li>
+          <li><strong>Obstruções:</strong> evite acessórios ou objetos que escondam olhos, boca, cabelo ou contorno do rosto.</li>
+          <li><strong>Formatos:</strong> o protótipo prevê imagens em JPG ou PNG. Validações de tamanho e envio serão definidas quando a API estiver disponível.</li>
+          <li><strong>Envio:</strong> o upload ainda não está disponível nesta versão.</li>
+        </ul>
+        <a className="help-page__back-link" href="#perguntas">Voltar às dúvidas frequentes</a>
       </section>
       <ActionLink to={paths.catalogo}>Explorar catálogo</ActionLink>
     </section>

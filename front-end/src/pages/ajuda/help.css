@@ -25,6 +25,8 @@
 
 .help-page__nav {
   display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   margin-top: 24px;
 }
 
@@ -53,6 +55,26 @@
 .help-page details p {
   margin-top: 12px;
   font: 1rem/1.6 'Lato', sans-serif;
+}
+
+.photo-guidance {
+  display: grid;
+  gap: 16px;
+  padding-left: 24px;
+  list-style: disc;
+  font: 1rem/1.6 'Lato', sans-serif;
+}
+
+.photo-guidance strong {
+  color: var(--petrol);
+}
+
+.help-page__back-link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--purple);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 @media (max-width: 600px) {
