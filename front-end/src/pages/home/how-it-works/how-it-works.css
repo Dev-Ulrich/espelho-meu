@@ -37,3 +37,32 @@
   margin-top: 12px;
   font: .875rem/1.5 'Lato', sans-serif;
 }
+
+.how-it-works__number {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--rose);
+  color: var(--paper);
+  font: 700 1rem/28px 'Lato', sans-serif;
+}
+
+.how-it-works__icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #f2e4dd;
+  color: #5b435b;
+}
+
+.how-it-works__arrow {
+  position: absolute;
+  right: -36px;
+  top: calc(50% - 12px);
+}
