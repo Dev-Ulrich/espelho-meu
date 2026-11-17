@@ -2,7 +2,7 @@ import { Outlet, useLocation } from 'react-router';
 import { useEffect } from 'react';
 import { SiteHeader } from './SiteHeader';
 
-export function SiteLayout() {
+export function SiteLayout({ withHeader = true }: { withHeader?: boolean }) {
   const { pathname } = useLocation();
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export function SiteLayout() {
   return (
     <>
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
-      <SiteHeader />
+      {withHeader && <SiteHeader />}
       <main id="conteudo" tabIndex={-1}>
         <Outlet />
       </main>

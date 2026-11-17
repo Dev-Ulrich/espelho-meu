@@ -1,3 +1,5 @@
+import '@fontsource/lato/latin-400.css';
+import '@fontsource/lato/latin-700.css';
 import '@fontsource/cormorant-garamond/600.css';
 import '@fontsource/cormorant-garamond/700.css';
 import '@fontsource/libre-baskerville/400.css';

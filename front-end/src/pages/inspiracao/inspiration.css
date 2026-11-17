@@ -1,0 +1,95 @@
+.inspiration-page { --category-purple: #654a87; --ui-font: 'Lato', system-ui, sans-serif; }
+.category-content { width: min(calc(100% - 40px), 1150px); margin: 32px auto 56px; display: grid; gap: 40px; }
+.inspiration-page h2 { font: 600 2.125rem/1.15 var(--heading-font); color: var(--petrol); margin-bottom: 12px; }
+.category-hero { position: relative; max-width: 1280px; margin: 30px auto 0; height: 458px; overflow: clip; }
+.category-hero__art { position: absolute; width: 819px; height: 590px; left: 9.3%; top: 13px; }
+.category-hero__purple { position: absolute; left: 0; bottom: 0; width: 511px; height: 590px; display: grid; place-items: center; }
+.category-hero__purple img { max-width: none; transform: rotate(90.23deg); }
+.category-hero__lilac { position: absolute; left: 278px; top: 22px; }
+.category-hero__lilac img { max-width: none; }
+.category-hero__outline { position: absolute; left: 9px; top: -2px; transform: scaleY(-1); }
+.category-hero__outline img { max-width: none; }
+.category-hero__portrait { position: absolute; top: 0; left: 60px; width: 489px; height: 442px; object-fit: cover; }
+.category-hero h1 { position: absolute; left: 46.4%; top: 147px; width: 49%; color: var(--petrol); font: 700 clamp(2.75rem, 5vw, 4rem)/1.04 var(--heading-font); }
+.filter-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-block: 10px; }
+.filter-button { min-width: 138px; min-height: 36px; padding: 6px 16px; border: 1px solid var(--line); border-radius: 30px; background: var(--paper); color: var(--petrol); font: 700 .875rem var(--ui-font); cursor: pointer; }
+.filter-button[aria-pressed='true'] { background: var(--category-purple); color: white; }
+.filter-selects { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font: .875rem var(--ui-font); }
+.filter-selects select { padding: 6px; margin-left: 8px; border-bottom: 1px solid var(--rose); background: var(--paper); }
+.result-count { font: .8rem var(--ui-font); margin-block: 12px; }
+.inspiration-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.inspiration-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: 0 2px 8px #241a1f0a; }
+.inspiration-card__photo { position: relative; height: 125px; background: var(--line); overflow: hidden; }
+.inspiration-card__photo img { width: 100%; height: 100%; object-fit: contain; }
+.inspiration-page--maquiagem .inspiration-card__photo { height: 143px; }
+.inspiration-page--maquiagem .inspiration-card__photo img { object-fit: cover; }
+.inspiration-card--make .inspiration-card__photo img { height: 248%; position: absolute; top: -35.79%; }
+.inspiration-card__body { flex: 1; padding: 10px 13px 13px; display: flex; flex-direction: column; gap: 6px; }
+.inspiration-card h3, .style-details h2 { font: 600 1.7rem/1.1 var(--heading-font); color: var(--petrol); }
+.inspiration-card p { font: .8rem/1.3 var(--ui-font); }
+.inspiration-card .action-link { margin-top: auto; font-family: var(--ui-font); background: var(--category-purple); }
+.consultation-banner { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 28px; background: linear-gradient(90deg, var(--petrol) 55%, #243c46cf); color: var(--paper); border-radius: 20px; }
+.consultation-banner h2 { color: inherit; margin-bottom: 8px; }
+.consultation-banner p { font: .9rem/1.4 var(--ui-font); max-width: 600px; }
+.consultation-banner .action-link { flex-shrink: 0; }
+.reference-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.reference-preview > div:first-child > p { font-size: .85rem; line-height: 1.6; margin: 12px 0; }
+.reference-note { color: var(--petrol); font-family: var(--ui-font); }
+.reference-thumbnails { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.reference-thumbnails button { border-radius: 12px; overflow: hidden; cursor: pointer; }
+.reference-thumbnails img { width: 100%; aspect-ratio: 103/98; object-fit: cover; }
+.comparison { padding-inline: 20px; border-left: 1px solid var(--rose); }
+.comparison__label { text-align: center; font: 700 .75rem/1.4 var(--ui-font); color: var(--purple); margin-bottom: 10px; }
+.comparison__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.comparison figure { border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: var(--paper); min-width: 0; }
+.comparison__photo { position: relative; aspect-ratio: 166/167; overflow: hidden; border-radius: 20px; }
+.comparison__photo img { width: 100%; height: 100%; object-fit: cover; }
+.inspiration-page--cabelo .comparison__photo--before img { position: absolute; width: 109.59%; max-width: none; height: 100.2%; left: -5.09%; top: -.2%; }
+.inspiration-page--maquiagem .comparison { border: none; }
+.inspiration-page--maquiagem .comparison__pair { background: var(--category-purple); border-radius: 20px; padding: 16px; }
+.inspiration-page--maquiagem .comparison__photo--before img { position: absolute; width: 113.01%; max-width: none; height: 149.78%; top: -35.16%; left: -6.49%; }
+.inspiration-page--maquiagem .comparison__photo--after img { position: absolute; width: 124.1%; max-width: none; height: 164.47%; top: -48.75%; left: -12.16%; }
+.comparison figcaption { font: 700 .75rem/1.4 var(--ui-font); text-align: center; color: var(--petrol); margin-top: 12px; }
+.simulation-tag { display: inline-flex; align-items: center; gap: 5px; border-radius: 20px; padding: 4px 12px; background: var(--category-purple); color: white; font: .625rem var(--ui-font); margin-bottom: 20px; }
+.care-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.care-grid article { display: flex; align-items: center; gap: 16px; border: 1px solid var(--line); border-radius: 16px; padding: 16px; background: var(--paper); }
+.care-grid span { color: var(--rose); font: 600 1.7rem var(--heading-font); }
+.care-grid img { width: 48px; height: 72px; object-fit: contain; }
+.care-grid h3 { font: 700 .875rem var(--ui-font); color: var(--petrol); margin-bottom: 8px; }
+.care-grid p { font: .8rem/1.4 var(--ui-font); }
+.style-details { margin: auto; width: min(520px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; border: 1px solid var(--line); border-radius: 20px; padding: 24px; color: var(--ink); background: var(--paper); }
+.style-details::backdrop { background: #29252b99; }
+.style-details > * + * { margin-top: 16px; }
+.style-details__image { width: 100%; max-height: 260px; object-fit: contain; background: var(--line); border-radius: 12px; }
+/* Recortes das camadas 82:274, 82:322 e 82:330 do Figma. */
+.inspiration-card--glow .inspiration-card__photo img { position: absolute; max-width: none; width: 104.43%; height: 259%; left: -2.21%; top: -72.4%; }
+.inspiration-card--olhar .inspiration-card__photo img { position: absolute; max-width: none; width: 100%; height: 248.02%; left: -.05%; top: -37.71%; }
+.inspiration-card--boca .inspiration-card__photo img { position: absolute; max-width: none; width: 148.09%; height: 367.29%; left: -43.09%; top: -117.62%; }
+.inspiration-page--maquiagem .category-hero__portrait { left: 22.71px; top: 16.3px; }
+@media (max-width: 1000px) {
+  .category-hero { height: 370px; }
+  .category-hero__art { transform: scale(.78); transform-origin: top left; left: 3%; }
+  .category-hero h1 { top: 110px; left: 47%; }
+  .inspiration-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .care-grid { grid-template-columns: 1fr; }
+  .reference-preview { gap: 20px; }
+  .comparison { padding-inline: 12px; }
+  .comparison__pair { gap: 8px; }
+  .comparison figure { padding: 8px; }
+}
+@media (max-width: 650px) {
+  .category-hero { display: flex; flex-direction: column; height: auto; padding: 0 20px; }
+  .category-hero__art { position: relative; left: 0; top: 0; height: 280px; width: 100%; transform: none; overflow: clip; }
+  .category-hero__purple { transform: scale(.56); transform-origin: top left; top: 0; bottom: auto; }
+  .category-hero__lilac { left: 150px; top: 20px; transform: scale(.56); transform-origin: top left; }
+  .category-hero__outline { left: 0; top: 0; transform: scale(.56) scaleY(-1); transform-origin: center left; }
+  .category-hero__portrait { width: 300px; height: 280px; left: 0; }
+  .category-hero h1 { position: relative; left: auto; top: auto; width: 100%; margin-top: 20px; font-size: 2.75rem; }
+  .category-content { gap: 32px; }
+  .inspiration-grid, .reference-preview { grid-template-columns: 1fr; }
+  .inspiration-card__photo { height: 180px; }
+  .inspiration-page--maquiagem .inspiration-card__photo { height: 180px; }
+  .consultation-banner { align-items: flex-start; flex-direction: column; padding: 24px; }
+  .comparison { border: 0; padding: 0; }
+  .filter-button { min-width: 0; flex: 1; }
+}

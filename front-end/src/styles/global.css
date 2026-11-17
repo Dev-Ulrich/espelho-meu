@@ -98,3 +98,10 @@
   .site-header__actions .action-link { padding-inline: .65rem; font-size: .85rem; }
   .site-menu { font-size: .8rem; column-gap: 13px; }
 }
+
+/* Estados compartilhados das páginas internas. */
+.notice { padding: 14px 16px; margin-block: 18px; border: 1px solid var(--line); border-left: 3px solid var(--rose); border-radius: 8px; background: var(--paper); font: .875rem/1.5 'Lato', system-ui, sans-serif; }
+.notice .action-link { margin-top: 12px; }
+.text-link { color: var(--purple); text-decoration: underline; text-underline-offset: 3px; }
+button.action-link { cursor: pointer; }
+button:disabled { cursor: not-allowed; }

@@ -1,5 +1,6 @@
 export const paths = {
   home: '/',
+  ajuda: '/ajuda',
   cabelo: '/cabelo',
   maquiagem: '/maquiagem',
   catalogo: '/catalogo',
