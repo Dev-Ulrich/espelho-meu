@@ -66,3 +66,38 @@
   right: -36px;
   top: calc(50% - 12px);
 }
+
+@media (max-width: 1000px) {
+  .how-it-works__steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .how-it-works__arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .how-it-works {
+    width: min(100% - 32px, 1150px);
+    margin-block: 40px;
+  }
+
+  .how-it-works h2 {
+    font-size: 2.125rem;
+  }
+
+  .how-it-works__steps {
+    grid-template-columns: 1fr;
+  }
+
+  .how-it-works__steps li {
+    padding: 24px 20px;
+  }
+
+  .how-it-works__number {
+    right: 12px;
+    top: 12px;
+  }
+}
