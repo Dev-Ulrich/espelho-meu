@@ -9,3 +9,16 @@ css
 .site-footer nav { display: grid; gap: 8px; padding-left: 32px; border-left: 1px solid var(--line); }
 .site-footer nav a { text-decoration: underline; text-underline-offset: 3px; }
 .site-footer__bottom { display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--rose); margin-top: 28px; padding-top: 16px; font-size: .75rem; }
+
+@media (max-width: 900px) {
+  .site-footer { padding-inline: 24px; }
+  .site-footer__columns { grid-template-columns: 1fr 1fr; }
+  .site-footer__brand { grid-column: 1 / -1; }
+  .site-footer nav { padding-left: 0; border: 0; }
+}
+@media (max-width: 600px) {
+  .site-footer__columns { grid-template-columns: 1fr; gap: 24px; }
+  .site-footer__brand { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .site-footer__bottom { flex-direction: column; gap: 12px; }
+  .site-footer nav a { display: flex; align-items: center; min-height: 44px; }
+}
