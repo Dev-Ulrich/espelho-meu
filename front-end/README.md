@@ -53,7 +53,7 @@ O upload em `src/pages/consultoria/foto/` e a vitrine em `src/pages/home/simulat
 | `src/pages/consultoria/` | Abertura e seleção de jornada |
 | `src/assets/figma/` | Exports originais locais e registro de origem |
 | `tests/` | Validação de campos e renderização de rotas |
-| [codigo integrantes/](<codigo integrantes/README.md>) | Guias de Arthur e Yasmin, com TSX/CSS, montagem e cinco entregas cada |
+| [codigo integrantes/](<codigo integrantes/README.md>) | Guias de Arthur, Yasmin, Matheus P. e Matheus L., com código, montagem e cinco entregas cada |
 
 Os componentes reservados aos integrantes estão descritos nos guias, **não implementados**. `PLANO-DE-COMMITS.md` foi preservado. O rodapé não foi duplicado nas páginas internas; sua integração global ficará com Yasmin e Victor. Os exemplos do Figma não equivalem a funcionalidades de IA já disponíveis.
 
