@@ -5,6 +5,7 @@ export type ConsultationArea = 'cabelo' | 'maquiagem';
 export type ConsultationQuestion = {
   id: string; titulo: string; opcoes: [string, string][]; ajuda?: string; multipla: boolean;
   quando?: Record<string, string[]>; descricoes?: Record<string, string>;
+  passos?: string[]; nota_guia?: string; reguas?: Record<'masculino' | 'feminino', Record<string, string>>;
 };
 
 export async function loadQuestionnaire(area: ConsultationArea, signal: AbortSignal, onRetry: () => void): Promise<ConsultationQuestion[]> {

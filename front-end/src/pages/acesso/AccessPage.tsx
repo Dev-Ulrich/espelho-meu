@@ -2,18 +2,16 @@ import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { paths } from '../../app/paths';
-import homeIcon from '../../assets/figma/cadastro-Vector.svg';
+import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
 import { validateAccess } from './validation';
 import type { AccessErrors, AccessFields, AccessMode } from './validation';
 import { useSession } from '../../app/session';
 import { privateApi } from '../../services/api/privateApi';
 import './access.css';
-import styles from './access.module.css';
 
 const copy = {
-  cadastro: { eyebrow: 'CADASTRE-SE', title: 'Faça parte do Espelho Meu.', description: 'Crie sua conta para salvar suas preferências, receber recomendações personalizadas e explorar todos os recursos da plataforma.', headline: 'Crie sua conta e viva uma nova experiência de beleza.', action: 'Cadastrar-se' },
-  login: { eyebrow: 'ENTRAR', title: 'Bem-vinda ao Espelho Meu.', description: 'Acesse sua conta para continuar sua jornada.', headline: 'Seu estilo, suas regras.', action: 'Entrar' },
-
+  cadastro: { eyebrow: 'Criar conta', title: 'Faça parte do Espelho Meu.', description: 'Guarde suas preferências e explore novas possibilidades.', headline: 'Crie sua conta e viva uma nova experiência de beleza.', action: 'Criar conta e continuar →' },
+  login: { eyebrow: 'Seu estilo, sua conta', title: 'Bom ter você por aqui.', description: 'Acesse sua conta para começar sua consultoria e continuar explorando seu estilo.', headline: 'Seu estilo.\nSeu tempo.\nSeu espaço.', action: 'Entrar e continuar →' },
 };
 
 export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> }) {
@@ -71,31 +69,27 @@ export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> })
   }
   return <div className="access-page">
     <aside className="identity-panel" aria-label="Espelho Meu">
-      <Link to={paths.home} className="identity-panel__brand">Espelho Meu</Link><p className="identity-panel__tagline">SEU ESTILO, SUAS REGRAS</p>
-      <div className="identity-panel__copy"><p>{text.headline}</p><span aria-hidden="true" /><p>Consultorias, simulações e dicas personalizadas, em um só lugar.</p></div>
+      <p className="identity-panel__tagline">Espelho Meu</p>
+      <p className="identity-panel__headline">{text.headline}</p>
+      <img className="identity-panel__portrait" src={hairPortrait} alt="" />
+      <p className="identity-panel__caption">Suas descobertas de beleza, reunidas em um só lugar.</p>
     </aside>
-    <Link className="home-shortcut" to={paths.home} aria-label="Voltar ao início"><img src={homeIcon} alt="" /></Link>
     <section className="access-content" aria-labelledby="access-title">
-      <p className="eyebrow">{text.eyebrow}</p><h1 id="access-title">{text.title}</h1><p>{text.description}</p>
+      <p className="access-eyebrow">{text.eyebrow}</p><h1 id="access-title">{text.title}</h1><p>{text.description}</p>
       {location.state?.registered && <p className="notice" role="status">Conta criada. Entre para continuar.</p>}
       <form ref={form} onSubmit={submit} noValidate aria-busy={sending}>
         {mode === 'cadastro' && field('name', 'Nome completo', 'text', 'name', 'Digite seu nome')}
-        <div className={mode === 'cadastro' ? 'access-row' : undefined}>
-          {field('email', 'E-mail', 'email', 'email', 'voce@exemplo.com')}
-          {mode === 'cadastro' && field('phone', 'Telefone (opcional)', 'tel', 'tel', '(00) 00000-0000')}
-        </div>
-        {mode === 'cadastro' && <div className={styles.birth}>{field('nascimento', 'Data de nascimento', 'date', 'bday')}</div>}
-        {<div className={mode === 'cadastro' ? 'access-row' : undefined}>
-          {field('password', 'Senha', 'password', mode === 'cadastro' ? 'new-password' : 'current-password')}
-          {mode === 'cadastro' && field('confirmation', 'Confirmar senha', 'password', 'new-password')}
-        </div>}
+        {field('email', 'E-mail', 'email', 'email', 'voce@exemplo.com')}
+        {mode === 'cadastro' && field('phone', 'Telefone (opcional)', 'tel', 'tel', '(00) 00000-0000')}
+        {mode === 'cadastro' && field('nascimento', 'Data de nascimento', 'date', 'bday')}
+        {field('password', 'Senha', 'password', mode === 'cadastro' ? 'new-password' : 'current-password')}
+        {mode === 'cadastro' && field('confirmation', 'Confirmar senha', 'password', 'new-password')}
         <button className="action-link action-link--primary access-submit" type="submit" disabled={sending}>{sending ? 'Aguarde…' : text.action}</button>
         <p role="status" className="submission-status">{message}</p>
       </form>
-      <div className="access-links">
-        {mode === 'cadastro' ? <p>Já tem conta? <Link to={paths.entrar} state={{ from: next }}>Entrar</Link></p> :
-          <Link to={paths.cadastro} state={{ from: next }}>Criar conta</Link>}
-      </div>
+      <Link className="action-link action-link--outline access-other" to={mode === 'cadastro' ? paths.entrar : paths.cadastro} state={{ from: next }}>
+        {mode === 'cadastro' ? 'Já tenho conta · Entrar' : 'Não tenho conta · Criar conta'}
+      </Link>
     </section>
   </div>;
 }

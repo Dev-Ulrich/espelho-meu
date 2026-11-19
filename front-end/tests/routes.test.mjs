@@ -16,14 +16,18 @@ test('apenas a home e os formulários de acesso renderizam conteúdo público', 
     const React = require('react');
     const { renderToString } = require('react-dom/server');
     const { MemoryRouter } = require('react-router');
-    const render = url => renderToString(React.createElement(MemoryRouter,
-      { initialEntries: [url] }, React.createElement(App)));
+    const render = (url, element = React.createElement(App)) => renderToString(React.createElement(MemoryRouter,
+      { initialEntries: [url] }, element));
 
     const home = render('/');
     assert.match(home, /Seu estilo,/);
+    assert.match(home, /id="como-funciona"/);
+    assert.match(home, /href="\/cadastro"[^>]*>Começar consultoria/);
     assert.doesNotMatch(home, /href="\/(maquiagem|catalogo|admin|integrantes)"/);
-    assert.match(render('/entrar'), /Acesse sua conta/);
-    assert.match(render('/cadastro'), /Data de nascimento/);
+    assert.match(render('/entrar'), /Bom ter você por aqui/);
+    const registration = render('/cadastro');
+    assert.match(registration, /Faça parte do Espelho Meu/);
+    assert.match(registration, /<input(?=[^>]*name="nascimento")(?=[^>]*type="date")/);
     for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/sobre', '/integrantes/victor', '/faq', '/contato', '/minha-conta', '/admin/produtos']) {
       assert.match(render(path), /Verificando sua sessão/);
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
@@ -31,6 +35,18 @@ test('apenas a home e os formulários de acesso renderizam conteúdo público', 
     for (const path of ['/catalogo', '/recuperar-senha']) {
       assert.equal(render(path), '');
     }
+
+    const { GuidedResults } = await server.ssrLoadModule('/src/pages/consultoria/GuidedResults.tsx');
+    const makeup = render('/consultoria/maquiagem/resultado', React.createElement(GuidedResults, {
+      area: 'maquiagem', result: { facial: { avisos: [] }, maquiagem: {
+        recomendacao: 'maquiagem luminosa', aplicacao: 'Aplique em camadas finas', pele_dica: '',
+        dica_produtos: 'Compare na mandíbula', produtos: { Base: [{ nome: 'Base fluida', preco: 'R$ 42,00',
+          ajustes: [], atributos: ['Líquida', 'Cobertura média'], url: 'https://example.com/base' }] },
+      } },
+    }));
+    assert.match(makeup, /maquiagem luminosa.*Base fluida.*R\$ 42,00.*Cobertura média/s);
+    assert.match(makeup, /Simular este acabamento/);
+    assert.match(makeup, /href="\/consultoria\/maquiagem\/revisao"/);
   } finally {
     await server.close();
   }
