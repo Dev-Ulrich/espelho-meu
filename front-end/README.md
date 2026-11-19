@@ -120,3 +120,9 @@ Dados e funções fornecidos pelo grupo; fotos importadas do [repositório indic
 | <img src="src/assets/team/Matheus-Luca.png" alt="Foto de Matheus Luca Fouad Barragão" width="80" /> | Matheus Luca Fouad Barragão | 572228 | 1TDSPW | Desenvolvimento (Python e Front-end) e documentação. | [GitHub](https://github.com/MatheusLuca) · [LinkedIn](https://www.linkedin.com/in/matheusbarragao/) |
 | <img src="src/assets/team/Arthur-da-Silva.jpg" alt="Foto de Arthur da Silva Santana" width="80" /> | Arthur da Silva Santana | 571075 | 1TDSPW | Desenvolvimento (Front-end), edição e roteirização. | [GitHub](https://github.com/arthursantana1521) · [LinkedIn](https://www.linkedin.com/in/arthur-da-silva-santana-a6061a310) |
 | <img src="src/assets/team/Yasmin-Capi.jpeg" alt="Foto de Yasmin Capi" width="80" /> | Yasmin Capi | 571926 | 1TDSPW | Desenvolvimento (Front-end), prototipação, edição e roteirização. | [GitHub](https://github.com/yasmincappi) · [LinkedIn](https://www.linkedin.com/in/yasmincappi/) |
+
+### Foto na hora
+
+Na pergunta de formato do rosto da consultoria capilar, selecione a análise por foto e use **Tirar foto agora**. A mesma opção está disponível na simulação dos resultados de cabelo e maquiagem. Permita o acesso à câmera, confira a prévia e clique em **Capturar foto**. É possível tirar outra foto, remover a selecionada ou escolher um arquivo. A câmera é encerrada ao capturar, cancelar ou sair da etapa; a captura permanece local até a confirmação do envio no fluxo existente.
+
+A câmera requer HTTPS (ou localhost) e permissão do navegador. Sem câmera ou com permissão negada, a escolha de arquivo continua disponível. Capturas são JPEG; fotos aceitas: JPG, PNG ou WebP, até 5 MB. Verificação com câmera física e permissões no celular/desktop ainda pendente; testes automatizados e build não substituem essa conferência.

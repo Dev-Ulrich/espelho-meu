@@ -1,3 +1,4 @@
+import { PhotoPicker } from './PhotoPicker';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
@@ -212,23 +213,12 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
               </label>;
             })}</div>
           </fieldset>}
-          {question?.id === 'formato_manual' && needsPhoto && <label className={`${styles.field} ${guided.photo}`}>
+          {question?.id === 'formato_manual' && needsPhoto && <div className={`${styles.field} ${guided.photo}`}>
             <strong>Uma foto pode ajudar</strong>
             <small>De frente, sem filtros e com boa luz. Afaste o cabelo do rosto e evite acessórios que escondam as laterais. Você também pode escolher o formato manualmente.</small>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
-              const file = event.currentTarget.files?.[0];
-              setResult(undefined);
-              if (file && (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
-                setPhoto(undefined);
-                event.currentTarget.value = '';
-                setError('Selecione uma foto JPG, PNG ou WebP de até 5 MB.');
-              } else {
-                setPhoto(file);
-                setError('');
-              }
-            }} />
-            <small>{photo ? `Foto selecionada: ${photo.name}` : 'A foto será enviada para estimar o formato facial quando você confirmar a revisão.'}</small>
-          </label>}
+            <PhotoPicker photo={photo} onChange={file => { setPhoto(file); setResult(undefined); setError(''); }} />
+            <small>A foto será enviada para estimar o formato facial quando você confirmar a revisão.</small>
+          </div>}
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={guided.actions}>
             <Link className="action-link action-link--outline" onClick={() => setError('')}

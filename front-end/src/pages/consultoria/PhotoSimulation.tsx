@@ -1,3 +1,4 @@
+import { PhotoPicker } from './PhotoPicker';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { type Journey } from '../../services/api/consultation';
 import { privateApi, privateResponse } from '../../services/api/privateApi';
@@ -6,6 +7,7 @@ import './consultation.css';
 export function PhotoSimulation({ area, style }: { area: Journey; style: string }) {
   const endpoint = `/consultoria/${area}/simulacao`;
   const [availability, setAvailability] = useState<'checking' | 'ready' | 'off' | 'error'>('checking');
+  const [photo, setPhoto] = useState<File>();
   const [busy, setBusy] = useState(false);
   const [picture, setPicture] = useState<Blob | null>(null);
   const [imageUrl, setImageUrl] = useState('');
@@ -36,7 +38,6 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
     event.preventDefault();
     if (request.current) return;
     const data = new FormData(event.currentTarget);
-    const photo = data.get('foto');
     if (!(photo instanceof File) || !['image/jpeg', 'image/png', 'image/webp'].includes(photo.type) || photo.size > 5 * 1024 * 1024) {
       setError('Selecione uma foto JPG, PNG ou WebP de até 5 MB.');
       return;
@@ -50,6 +51,7 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
       setError('Confirme a autorização de envio da foto.');
       return;
     }
+    data.set('foto', photo);
     data.delete('codigo');
     data.delete('autoriza');
     data.set('estilo', style);
@@ -83,7 +85,7 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
     {availability === 'error' && <p role="alert">Não foi possível verificar a disponibilidade da edição de fotos.</p>}
     {availability === 'ready' && <form onSubmit={simulate} aria-busy={busy}>
       <fieldset disabled={busy}>
-        <label>Foto (JPG, PNG ou WebP, até 5 MB)<input type="file" name="foto" required accept="image/jpeg,image/png,image/webp" /></label>
+        <PhotoPicker photo={photo} onChange={file => { setPhoto(file); setError(''); }} />
         <label>Código de demonstração<input type="password" name="codigo" required autoComplete="off" /></label>
         <label className="simulation-consent"><input type="checkbox" name="autoriza" required /> Autorizo o envio desta foto ao serviço de edição da OpenAI para gerar esta simulação.</label>
       </fieldset>

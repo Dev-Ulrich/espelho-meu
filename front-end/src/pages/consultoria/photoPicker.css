@@ -1,0 +1,9 @@
+.photo-picker { display: grid; gap: 1rem; min-width: 0; }
+.photo-picker > label { display: grid; gap: .5rem; }
+.photo-picker input { width: 100%; min-width: 0; }
+.photo-picker > button { justify-self: start; }
+.photo-picker__camera { display: flex; flex-wrap: wrap; gap: .75rem; }
+.photo-picker video { width: 100%; max-height: 420px; object-fit: contain; background: #2d2035; border-radius: 12px; }
+.photo-picker figure { display: grid; gap: .5rem; justify-items: start; overflow-wrap: anywhere; }
+.photo-picker figure img { width: min(100%, 280px); max-height: 320px; object-fit: contain; border-radius: 12px; }
+.photo-picker [role="alert"] { color: #8b2222; }
