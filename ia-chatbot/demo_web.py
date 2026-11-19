@@ -4,7 +4,7 @@ from pathlib import Path
 
 import joblib
 import pandas as pd
-from flask import jsonify, render_template, request, send_from_directory
+from flask import current_app, jsonify, render_template, request, send_from_directory
 
 from configuracao import CAMPOS
 from cortes import ranquear
@@ -165,6 +165,7 @@ def instalar_demo(app, modelos, pasta_modelos, prever):
             except ValueError as erro:
                 return jsonify(erro=str(erro)), 422
             except RuntimeError as erro:
+                current_app.logger.exception("Falha ao executar análise facial")
                 return jsonify(erro=str(erro)), 503
             detectado = str(facial.predict(pd.DataFrame([medidas], columns=FEATURES))[0])
 
@@ -212,6 +213,7 @@ def instalar_demo(app, modelos, pasta_modelos, prever):
             except ValueError as erro:
                 return jsonify(erro=str(erro)), 422
             except RuntimeError as erro:
+                current_app.logger.exception("Falha ao executar análise facial")
                 return jsonify(erro=str(erro)), 503
             detectado = str(facial.predict(pd.DataFrame([medidas], columns=FEATURES))[0])
 

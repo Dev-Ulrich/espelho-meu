@@ -1,12 +1,8 @@
 services:
   - type: web
     name: espelho-meu-ia
-    runtime: python
+    runtime: docker
     plan: free
-    rootDir: ia-chatbot
-    buildCommand: pip install -r requirements.txt && python verificar_demo.py
-    startCommand: gunicorn --bind "0.0.0.0:$PORT" "app:create_app()"
+    dockerContext: ./ia-chatbot
+    dockerfilePath: ./ia-chatbot/Dockerfile
     healthCheckPath: /api/saude
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.3

@@ -7,3 +7,7 @@
 .photo-picker figure { display: grid; gap: .5rem; justify-items: start; overflow-wrap: anywhere; }
 .photo-picker figure img { width: min(100%, 280px); max-height: 320px; object-fit: contain; border-radius: 12px; }
 .photo-picker [role="alert"] { color: #8b2222; }
+.photo-picker > .photo-picker__native { display: none; }
+@media (pointer: coarse) {
+  .photo-picker > .photo-picker__native { display: grid; }
+}

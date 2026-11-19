@@ -90,13 +90,19 @@ export function PhotoPicker({ photo, onChange }: { photo?: File; onChange: (phot
   }
 
   return <div className="photo-picker">
+    {!camera && <button type="button" className="action-link action-link--primary" disabled={opening} onClick={openCamera}>{opening ? 'Abrindo câmera…' : 'Tirar foto agora'}</button>}
+    <label className="photo-picker__native">Usar câmera do celular
+      <input type="file" accept="image/*" capture="user" onChange={event => {
+        select(event.currentTarget.files?.[0]);
+        event.currentTarget.value = '';
+      }} />
+    </label>
     <label>Escolher foto do dispositivo (JPG, PNG ou WebP, até 5 MB)
       <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
         select(event.currentTarget.files?.[0]);
         event.currentTarget.value = '';
       }} />
     </label>
-    {!camera && <button type="button" className="action-link action-link--outline" disabled={opening} onClick={openCamera}>{opening ? 'Abrindo câmera…' : 'Tirar foto agora'}</button>}
     {(camera || opening) && <div className="photo-picker__camera">
       {camera && <>
         <video ref={video} autoPlay playsInline muted aria-label="Prévia da câmera" onLoadedData={() => setReady(true)} />

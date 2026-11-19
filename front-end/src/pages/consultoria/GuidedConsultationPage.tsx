@@ -130,7 +130,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
       if (request.signal.aborted) return;
       const unavailable = cause instanceof PrivateApiError && [502, 503, 504].includes(cause.status);
       setError(needsPhoto && unavailable
-        ? 'A análise da foto está indisponível agora. Você pode continuar escolhendo o formato do rosto.'
+        ? `${cause.message} Suas respostas foram mantidas. Tente novamente ou continue escolhendo o formato do rosto.`
         : cause instanceof Error ? cause.message : 'Não foi possível analisar o questionário.');
     } finally {
       pendingResult.current = null;

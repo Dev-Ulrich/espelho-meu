@@ -69,6 +69,29 @@ def main():
         assert client.get("/api/privado/simulacoes/status", headers=headers).status_code == 200
 
     verificar_simulacao(chave)
+    verificar_foto(chave)
+
+
+def verificar_foto(chave):
+    """Exercita o MediaPipe real: importar o pacote não valida suas bibliotecas nativas."""
+    with patch.dict("os.environ", {"ESPELHO_IA_INTERNAL_KEY": chave}):
+        app = create_app()
+    respostas = {"jornada": "cabelo", "formato_manual": "foto"}
+    for _ in range(2):
+        for pergunta in caminho(respostas):
+            preencher(respostas, pergunta)
+    respostas.pop("jornada")
+    foto = BytesIO()
+    Image.new("RGB", (256, 256), "white").save(foto, format="JPEG")
+    foto.seek(0)
+    with app.test_client() as client:
+        resposta = client.post("/api/privado/cabelo/analisar",
+            headers={"X-Espelho-Internal-Key": chave},
+            data={"respostas": json.dumps(respostas), "foto": (foto, "sem-rosto.jpg")})
+    esperado = "Nenhum rosto detectado. Use uma foto frontal e com boa iluminação."
+    if resposta.status_code != 422 or resposta.get_json().get("erro") != esperado:
+        raise SystemExit(f"Análise facial indisponível: HTTP {resposta.status_code} {resposta.get_json()}")
+    print("Upload privado: detector facial real iniciou e rejeitou corretamente imagem sem rosto.")
 
 
 def verificar_simulacao(chave):

@@ -6,22 +6,33 @@ Health check e os dois POSTs de demonstração foram validados com HTTP 200.
 O `front-end/vercel.json` encaminha `/api/recomendacoes/:area` para este serviço
 antes do fallback da SPA. A API Java continua independente.
 
-O `render.yaml` na raiz prepara um Web Service Python separado da API Java.
+O `render.yaml` na raiz prepara um Web Service Docker separado da API Java.
 Antes de criar, confira na conta Render se já existe um serviço Flask deste projeto.
 Reutilize-o se houver. O plano configurado no Blueprint é gratuito.
 
 Configuração equivalente no painel:
 
 - Repositório: `Dev-Ulrich/espelho-meu`
-- Root Directory: `ia-chatbot`
-- Runtime: Python; `PYTHON_VERSION=3.12.3`
-- Build: `pip install -r requirements.txt && python verificar_demo.py`
-- Start: `gunicorn --bind "0.0.0.0:$PORT" "app:create_app()"`
+- Root Directory: vazio (raiz do repositório)
+- Runtime: Docker
+- Dockerfile: `./ia-chatbot/Dockerfile`
+- Docker Context: `./ia-chatbot`
+- Build e Start: definidos pelo Dockerfile
 - Health check: `/api/saude`
 
 Os modelos `modelos/cabelo.joblib` e `modelos/maquiagem.joblib` já estão versionados.
 O build verifica ambos, todos os perfis aceitos e os resultados de demonstração.
-Não é necessário treinar novamente, enviar fotos nem configurar chave da OpenAI.
+Não é necessário treinar novamente nem configurar chave da OpenAI para a análise facial.
+O build também envia uma imagem sintética sem rosto à rota privada e exige a
+resposta de validação 422. Isso verifica o detector real, seus modelos e bibliotecas
+nativas: um 503 deve interromper o build.
+
+O runtime Python nativo não executa o Dockerfile nem instala `libegl1` e
+`libgles2`. A consulta manual pode funcionar enquanto a análise de foto retorna 503.
+Para o serviço existente, aplique a mudança para Docker e os caminhos acima no
+Render antes de republicar. Apenas enviar o código não altera a configuração de
+um serviço criado fora de um Blueprint. Preserve a `ESPELHO_IA_INTERNAL_KEY` e a
+URL usada pela API Java. Não crie um serviço duplicado.
 
 Após o deploy, use o domínio realmente atribuído pelo Render e confirme:
 
