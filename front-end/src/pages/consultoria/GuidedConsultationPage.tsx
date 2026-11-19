@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
-import { privateApi } from '../../services/api/privateApi';
+import { PrivateApiError, privateApi } from '../../services/api/privateApi';
 import { PhotoSimulation } from './PhotoSimulation';
 import styles from '../authenticated/workspace.module.css';
 
@@ -103,7 +103,10 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
       setSimulationStyle('');
       navigate(base + '/resultado');
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível analisar o questionário.');
+      const unavailable = cause instanceof PrivateApiError && [502, 503, 504].includes(cause.status);
+      setError(needsPhoto && unavailable
+        ? 'A análise da foto está indisponível agora. Você pode continuar escolhendo o formato do rosto.'
+        : cause instanceof Error ? cause.message : 'Não foi possível analisar o questionário.');
     } finally {
       setSending(false);
     }
@@ -185,6 +188,12 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
           })}</dl>}
         </fieldset>
         {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && index === 3 && needsPhoto && <Link className="action-link action-link--outline" to={base + '/perfil'}
+          onClick={() => {
+            setAnswers(previous => ({ ...previous, formato_manual: '' }));
+            setPhoto(undefined);
+            setError('');
+          }}>Escolher o formato do rosto</Link>}
         <div className={styles.actions}>
           {index > 0 && <Link className="action-link action-link--outline" to={base + '/' + steps[index - 1].id}>Voltar</Link>}
           <button className="action-link action-link--primary" disabled={sending}>
