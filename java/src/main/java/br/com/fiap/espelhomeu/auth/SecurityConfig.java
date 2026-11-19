@@ -53,7 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(routes -> routes
                         .requestMatchers(HttpMethod.GET, "/auth/csrf", "/saude", "/saude/banco").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/cadastro", "/auth/login").permitAll()
-                        .requestMatchers("/auth/sessao", "/auth/logout", "/consultoria/cabelo/**", "/consultoria/maquiagem/**").authenticated()
+                        .requestMatchers("/auth/sessao", "/auth/logout").authenticated()
+                        .requestMatchers("/consultoria/cabelo/**", "/consultoria/maquiagem/**").hasRole("USER")
                         .anyRequest().hasRole("ADMIN"))
                 .addFilterBefore(new OncePerRequestFilter() {
                     @Override

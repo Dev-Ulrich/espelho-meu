@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const require = createRequire(new URL('../package.json', import.meta.url));
 const { createServer } = await import(pathToFileURL(require.resolve('vite')));
 
-test('landing e páginas institucionais são públicas; consultorias e conta exigem sessão', async () => {
+test('home, galerias e páginas institucionais são públicas; consultorias e administração exigem sessão', async () => {
   const server = await createServer({
     root: fileURLToPath(new URL('..', import.meta.url)),
     server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom',
@@ -22,12 +22,19 @@ test('landing e páginas institucionais são públicas; consultorias e conta exi
     const home = render('/');
     assert.match(home, /Seu estilo,/);
     assert.match(home, /id="como-funciona"/);
-    assert.match(home, /href="\/entrar"[^>]*>Começar consultoria/);
-    assert.doesNotMatch(home, /href="\/(maquiagem|catalogo|admin)"/);
+    assert.match(home, /href="\/cadastro"[^>]*>Criar conta/);
+    assert.match(home, /href="\/entrar"[^>]*>Já tenho conta/);
+    assert.doesNotMatch(home, /href="\/(consultoria|catalogo|admin)"/);
     for (const [path, title] of [['/sobre', 'Sobre o Espelho Meu'], ['/integrantes', 'Integrantes'], ['/integrantes/victor', 'Victor Ulrich'], ['/faq', 'Perguntas frequentes'], ['/contato', 'Contato']]) {
       const page = render(path);
       assert.ok(page.includes(title), `${path} deve apresentar seu conteúdo público`);
       assert.doesNotMatch(page, /Verificando sua sessão/);
+    }
+    for (const [path, example] of [['/cabelo', 'Bob reto'], ['/maquiagem', 'Pele luminosa']]) {
+      const page = render(path);
+      assert.ok(page.includes(example));
+      assert.match(page, /href="\/entrar"[^>]*>Veja como fica em você/);
+      assert.doesNotMatch(page, /type="file"|Verificando sua sessão/);
     }
     for (const path of ['/sobre', '/integrantes', '/faq', '/contato']) {
       assert.ok(home.includes(`href="${path}"`));
@@ -36,7 +43,7 @@ test('landing e páginas institucionais são públicas; consultorias e conta exi
     const registration = render('/cadastro');
     assert.match(registration, /Faça parte do Espelho Meu/);
     assert.match(registration, /<input(?=[^>]*name="nascimento")(?=[^>]*type="date")/);
-    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/minha-conta', '/admin/produtos']) {
+    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/minha-conta', '/admin/produtos', '/admin/penteados', '/admin/imagens']) {
       assert.match(render(path), /Verificando sua sessão/);
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }

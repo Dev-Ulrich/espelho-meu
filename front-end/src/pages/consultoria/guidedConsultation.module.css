@@ -120,3 +120,16 @@
 .productGroups ul { margin-top: .5rem; }
 .productGroups li { padding-top: .65rem; border-top: 1px solid var(--line); }
 @media (max-width: 550px) { .resultLead { grid-template-columns: minmax(0, 1fr); } .resultLead img { aspect-ratio: 4 / 3; } }
+
+.optionList, .visualOptions { display: grid; gap: .65rem; }
+.visualOptions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr)); }
+.visualOption { display: grid; grid-template-columns: auto 1fr; align-content: start; padding: .55rem; gap: .6rem; overflow: hidden; }
+.visualOption img { grid-column: 1 / -1; width: 100%; aspect-ratio: 1.15; object-fit: cover; object-position: center 37%; border-radius: 9px; }
+.option:focus-within { outline: 2px solid var(--purple); outline-offset: 2px; }
+.journeyCard { box-shadow: 0 14px 36px #2d20350b; }
+@media (max-width: 480px) { .visualOptions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: no-preference) {
+  :global(html:not([data-reduced-motion])) :is(.question,.journeyCard,.resultLead) { animation: question-in .35s ease-out both; }
+  :global(html:not([data-reduced-motion])) .option { transition: background-color .2s ease, border-color .2s ease; }
+}
+@keyframes question-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

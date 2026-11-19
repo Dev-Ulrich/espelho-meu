@@ -1,13 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, Navigate, NavLink, useParams } from 'react-router';
+import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router';
+import { paths } from '../../app/paths';
+import { useSession } from '../../app/session';
 import { privateApi } from '../../services/api/privateApi';
 import { productCategories } from '../../services/api/productDemo';
 import styles from '../authenticated/workspace.module.css';
 
 type Row = { id: number; nome: string } & Record<string, string | number | null>;
 type Field = { key: string; label: string; type?: string; max?: number; optional?: boolean; options?: readonly string[] };
+const imageField = { key: 'imagem', label: 'Imagem JPG, PNG ou WebP', type: 'file' };
 const entities = {
-  produtos: { path: '/produto', label: 'Produtos', fields: [
+  produtos: { path: '/produto', label: 'Produtos', description: 'Itens, marcas, preços e categorias.', fields: [
     { key: 'nome', label: 'Nome', max: 20 },
     { key: 'categoria', label: 'Categoria', options: productCategories },
     { key: 'marca', label: 'Marca', max: 30 },
@@ -17,19 +20,25 @@ const entities = {
     { key: 'cor', label: 'Cor', max: 30, optional: true },
     { key: 'data', label: 'Data e hora', type: 'datetime-local', optional: true },
   ] },
-  usuarios: { path: '/usuario', label: 'Usuários', fields: [
+  usuarios: { path: '/usuario', label: 'Usuários', description: 'Cadastre contas e atualize os dados de usuários.', fields: [
     { key: 'nome', label: 'Nome', max: 100 },
     { key: 'email', label: 'E-mail', type: 'email', max: 100 },
     { key: 'data', label: 'Data de nascimento', type: 'date' },
     { key: 'telefone', label: 'Telefone', type: 'tel', max: 20, optional: true },
   ] },
-  cortes: { path: '/corte', label: 'Cortes de cabelo', fields: [
+  cortes: { path: '/corte', label: 'Cortes de cabelo', description: 'Cortes, orientações de manutenção e imagens.', fields: [
     { key: 'nome', label: 'Nome', max: 40 },
     { key: 'descricao', label: 'Descrição', max: 100 },
     { key: 'informacaoManutencao', label: 'Informações de manutenção', max: 150 },
-    { key: 'imagem', label: 'Imagem JPG, PNG ou WebP', type: 'file' },
+    imageField,
   ] },
-} satisfies Record<string, { path: string; label: string; fields: Field[] }>;
+  penteados: { path: '/penteado', label: 'Penteados', description: 'Penteados, orientações de manutenção e imagens.', fields: [
+    { key: 'nome', label: 'Nome', max: 30 },
+    { key: 'descricao', label: 'Descrição', max: 100 },
+    { key: 'informacaoManutencao', label: 'Informações de manutenção', max: 150 },
+    imageField,
+  ] },
+} satisfies Record<string, { path: string; label: string; description: string; fields: Field[] }>;
 type EntityKey = keyof typeof entities;
 
 function encodeImage(file: File) {
@@ -73,7 +82,7 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
         if (field.type === 'file') {
           if (value instanceof File && value.size) data[field.key] = await encodeImage(value);
           else if (editor !== 'new') data[field.key] = editor[field.key];
-          else throw new Error('Adicione a imagem do corte.');
+          else throw new Error('Adicione uma imagem ao registro.');
         } else if (field.type === 'number') data[field.key] = Number(value);
         else data[field.key] = String(value ?? '').trim() || null;
       }
@@ -145,6 +154,8 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
         : rows.length === 0 ? <p>Nenhum registro cadastrado.</p> : <ul className={styles.grid}>
           {rows.map(row => <li key={row.id} className={styles.item}>
             <h3>{row.nome}</h3>
+            {typeof row.imagem === 'string' && row.imagem && <img className={styles.adminImage}
+              src={imageSource(row.imagem)} alt={`Referência de ${row.nome}`} loading="lazy" />}
             <p>{String(row.email ?? row.marca ?? row.descricao ?? '')}</p>
             <div className={styles.actions}>
               <button className={styles.link} disabled={!!target} onClick={() => { setEditor(row); setError(''); }}>Editar</button>
@@ -156,16 +167,58 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
   </section>;
 }
 
+function imageSource(value: string) {
+  const mime = value.startsWith('/9j/') ? 'jpeg' : value.startsWith('UklGR') ? 'webp' : 'png';
+  return `data:image/${mime};base64,${value}`;
+}
+
 export function AdminPage() {
   const { entidade } = useParams();
-  if (entidade && !Object.hasOwn(entities, entidade)) return <Navigate to="/admin" replace />;
+  const { state, logout } = useSession();
+  const navigate = useNavigate();
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
+  const isImages = entidade === 'imagens';
+  if (entidade && !isImages && !Object.hasOwn(entities, entidade)) return <Navigate to={paths.admin} replace />;
+
+  async function signOut() {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      await logout();
+      navigate(paths.entrar, { replace: true });
+    } catch {
+      setSignOutError('Não foi possível encerrar a sessão. Tente novamente.');
+      setSigningOut(false);
+    }
+  }
+
   return <section className={styles.page}>
-    <h1 className={styles.title}>Painel administrativo</h1>
-    <nav className={styles.nav} aria-label="Entidades administrativas">
-      {Object.entries(entities).map(([key, value]) => <NavLink className={styles.link}
-        end key={key} to={'/admin/' + key}>{value.label}</NavLink>)}
+    <header className={styles.workspaceHero}>
+      <div><h1 className={styles.title}>Painel administrativo</h1>
+        <p>{state.status === 'signed-in' ? state.user.nome + ' · ' : ''}Administração do Espelho Meu</p></div>
+      <button type="button" className="action-link action-link--outline" onClick={signOut} disabled={signingOut}>
+        {signingOut ? 'Saindo…' : 'Sair'}
+      </button>
+      {signOutError && <p role="alert">{signOutError}</p>}
+    </header>
+    <nav className={`${styles.nav} ${styles.adminTabs}`} aria-label="Cadastros administrativos">
+      <NavLink end to={paths.admin}>Visão geral</NavLink>
+      {Object.entries(entities).map(([key, value]) => <NavLink end key={key} to={paths.admin + '/' + key}>{value.label}</NavLink>)}
+      <NavLink end to={paths.admin + '/imagens'}>Imagens</NavLink>
     </nav>
-    {entidade ? <EntityCrud key={entidade} entity={entidade as EntityKey} /> :
-      <div className={styles.panel}><p>Escolha o que deseja gerenciar.</p><Link className={styles.link} to="/admin/produtos">Abrir produtos</Link></div>}
+    {isImages ? <section className={styles.panel}>
+      <h2 className={styles.title}>Imagens de referência</h2>
+      <p>Adicione uma foto ao cadastrar um corte ou penteado. Para trocar uma foto, abra o registro e escolha “Editar”.</p>
+      <div className={styles.actions}>
+        <Link className="action-link action-link--primary" to={paths.admin + '/cortes'}>Imagens de cortes</Link>
+        <Link className="action-link action-link--outline" to={paths.admin + '/penteados'}>Imagens de penteados</Link>
+      </div>
+    </section> : entidade ? <EntityCrud key={entidade} entity={entidade as EntityKey} /> :
+      <div className={styles.grid}>
+        {Object.entries(entities).map(([key, value]) => <Link key={key} className={styles.item} to={paths.admin + '/' + key}>
+          <h2>{value.label}</h2><p>{value.description}</p>
+        </Link>)}
+      </div>}
   </section>;
 }

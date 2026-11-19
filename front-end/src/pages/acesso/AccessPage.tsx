@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { paths } from '../../app/paths';
-import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
+import { editorialPhotos } from '../home/editorialContent';
 import { validateAccess } from './validation';
 import type { AccessErrors, AccessFields, AccessMode } from './validation';
 import { useSession } from '../../app/session';
@@ -10,9 +10,14 @@ import { privateApi } from '../../services/api/privateApi';
 import './access.css';
 
 const copy = {
-  cadastro: { eyebrow: 'Criar conta', title: 'Faça parte do Espelho Meu.', description: 'Guarde suas preferências e explore novas possibilidades.', headline: 'Crie sua conta e viva uma nova experiência de beleza.', action: 'Criar conta e continuar →' },
-  login: { eyebrow: 'Seu estilo, sua conta', title: 'Bom ter você por aqui.', description: 'Acesse sua conta para começar sua consultoria e continuar explorando seu estilo.', headline: 'Seu estilo.\nSeu tempo.\nSeu espaço.', action: 'Entrar e continuar →' },
+  cadastro: { eyebrow: 'Criar conta', title: 'Faça parte do Espelho Meu.', description: 'Guarde suas preferências e explore novas possibilidades.', headline: 'Crie sua conta e viva uma nova experiência de beleza.', action: 'Criar conta e continuar' },
+  login: { eyebrow: 'Seu estilo, sua conta', title: 'Bom ter você por aqui.', description: 'Acesse sua conta para começar sua consultoria e continuar explorando seu estilo.', headline: 'Seu estilo.\nSeu tempo.\nSeu espaço.', action: 'Entrar e continuar' },
 };
+
+function afterAccess(role: 'USER' | 'ADMIN', destination: string) {
+  if (role === 'ADMIN') return destination.startsWith(paths.admin) ? destination : paths.admin;
+  return destination && !destination.startsWith(paths.admin) ? destination : paths.consultoria;
+}
 
 export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> }) {
   const [fields, setFields] = useState<AccessFields>({ name: '', email: '', phone: '', password: '', confirmation: '', nascimento: '' });
@@ -26,7 +31,7 @@ export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> })
   const requested = typeof location.state?.from === 'string' ? location.state.from : '';
   const next = /^\/(consultoria(\/|\?|$)|minha-conta(\?|$)|admin(\/|$))/.test(requested) ? requested : '';
   const text = copy[mode];
-  if (state.status === 'signed-in') return <Navigate replace to={next || (state.user.role === 'ADMIN' ? '/admin' : paths.conta)} />;
+  if (state.status === 'signed-in') return <Navigate replace to={afterAccess(state.user.role, next)} />;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = validateAccess(mode, fields);
@@ -45,10 +50,15 @@ export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> })
           nome: fields.name.trim(), email: fields.email.trim(), telefone: fields.phone.trim() || null,
           dataNascimento: fields.nascimento, senha: fields.password,
         } });
-        navigate(paths.entrar, { replace: true, state: { from: next, registered: true } });
+        try {
+          const user = await login(fields.email.trim(), fields.password);
+          navigate(afterAccess(user.role, next), { replace: true });
+        } catch {
+          navigate(paths.entrar, { replace: true, state: { from: next, registered: true } });
+        }
       } else {
         const user = await login(fields.email.trim(), fields.password);
-        navigate(next || (user.role === 'ADMIN' ? '/admin' : paths.conta), { replace: true });
+        navigate(afterAccess(user.role, next), { replace: true });
       }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Não foi possível continuar.');
@@ -71,8 +81,7 @@ export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> })
     <aside className="identity-panel" aria-label="Espelho Meu">
       <p className="identity-panel__tagline">Espelho Meu</p>
       <p className="identity-panel__headline">{text.headline}</p>
-      <img className="identity-panel__portrait" src={hairPortrait} alt="" />
-      <p className="identity-panel__caption">Suas descobertas de beleza, reunidas em um só lugar.</p>
+      <img className="identity-panel__portrait" src={mode === 'cadastro' ? editorialPhotos.natural : editorialPhotos.matte} alt="" />
     </aside>
     <section className="access-content" aria-labelledby="access-title">
       <p className="access-eyebrow">{text.eyebrow}</p><h1 id="access-title">{text.title}</h1><p>{text.description}</p>

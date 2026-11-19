@@ -11,6 +11,7 @@ export const paths = {
   entrar: '/entrar',
   cadastro: '/cadastro',
   recuperarSenha: '/recuperar-senha',
+  admin: '/admin',
   conta: '/minha-conta',
   consultoria: '/consultoria',
 } as const;

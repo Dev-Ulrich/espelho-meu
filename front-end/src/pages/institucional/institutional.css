@@ -19,3 +19,6 @@
   min-height: 32px;
   font-weight: 700;
 }
+
+.institutional-team li { border-top: 3px solid #b294bd; }
+.institutional-team a { color: #392747; font-family: var(--heading-font); font-size: 1.55rem; }

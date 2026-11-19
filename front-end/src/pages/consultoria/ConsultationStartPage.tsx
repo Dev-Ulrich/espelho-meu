@@ -25,10 +25,9 @@ export function ConsultationStartPage() {
       {journeys.map(({ area, title, portrait, description }) => <article key={area} className={guided.journeyCard}>
         <img src={portrait} alt="" />
         <h2>{title}</h2><p>{description}</p>
-        <ActionLink to={`/consultoria/${area}/perfil`}>Começar {area} →</ActionLink>
+        <ActionLink to={`/consultoria/${area}/perfil`}>Começar {area}</ActionLink>
       </article>)}
     </div>
-    <p>Quer experimentar cabelo e maquiagem? Faça uma consultoria por vez, sem pressa.</p>
     <button type="button" className="action-link action-link--outline" aria-pressed={reducedMotion} onClick={() => {
       const enabled = !reducedMotion;
       sessionStorage.setItem('espelho-reduced-motion', String(enabled));
