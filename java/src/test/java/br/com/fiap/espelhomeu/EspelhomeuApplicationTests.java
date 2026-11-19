@@ -79,12 +79,15 @@ class EspelhomeuApplicationTests {
         mvc.perform(get("/usuario").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/produto").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/corte").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/penteado").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/consultoria/cabelo/questionario").session(session))
                 .andExpect(status().isServiceUnavailable());
         mvc.perform(get("/consultoria/maquiagem/questionario").session(session))
                 .andExpect(status().isServiceUnavailable());
         jdbc.update("UPDATE T_EM_CREDENCIAL SET DS_ROLE = 'ADMIN'");
         mvc.perform(get("/usuario").session(session)).andExpect(status().isOk());
+        mvc.perform(get("/consultoria/cabelo/questionario").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/consultoria/maquiagem/questionario").session(session)).andExpect(status().isForbidden());
         mvc.perform(post("/auth/logout").with(csrf()).session(session)).andExpect(status().isNoContent());
         mvc.perform(get("/auth/sessao")).andExpect(status().isUnauthorized());
     }
