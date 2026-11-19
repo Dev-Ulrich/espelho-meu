@@ -1,6 +1,7 @@
 from base64 import b64decode
 from binascii import Error as Base64Error
 from io import BytesIO
+from logging import getLogger
 
 import requests
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -49,15 +50,24 @@ def editar_foto(foto, tamanho, area, estilo, chave, modelo):
     resposta = requests.post(
         URL_EDICAO,
         headers={"Authorization": f"Bearer {chave}"},
-        files={"image": ("foto.jpg", foto, "image/jpeg")},
-        data={"model": modelo, "prompt": prompt, "size": tamanho, "quality": "low", "output_format": "jpeg"},
+        files={"image[]": ("foto.jpg", foto, "image/jpeg")},
+        data={"model": modelo, "prompt": prompt, "size": tamanho, "quality": "low",
+              "output_format": "jpeg", "output_compression": 85, "n": 1},
+        allow_redirects=False,
         timeout=(10, 150),
     )
     resposta.raise_for_status()
     try:
-        imagem = b64decode(resposta.json()["data"][0]["b64_json"], validate=True)
+        dados = resposta.json()
+        imagem = b64decode(dados["data"][0]["b64_json"], validate=True)
     except (ValueError, TypeError, KeyError, IndexError, Base64Error) as erro:
         raise ValueError("Resposta inválida da API de imagens.") from erro
     if not imagem.startswith(b"\xff\xd8"):
         raise ValueError("A API de imagens não retornou um JPEG válido.")
+    uso = dados.get("usage")
+    if isinstance(uso, dict) and isinstance(uso.get("input_tokens_details"), dict):
+        entrada = uso["input_tokens_details"]
+        contagens = (entrada.get("image_tokens"), entrada.get("text_tokens"), uso.get("output_tokens"))
+        if all(type(valor) is int and valor >= 0 for valor in contagens):
+            getLogger("gunicorn.error").info("Uso de imagem: entrada_foto=%d entrada_texto=%d saida=%d", *contagens)
     return imagem

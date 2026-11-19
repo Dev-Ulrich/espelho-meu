@@ -79,7 +79,11 @@ export function AccountPage() {
         <nav className="account-tabs" aria-label="Consultas salvas"><Link aria-current={current.id === 'consultorias' ? 'page' : undefined} to="/minha-conta?secao=consultorias">Histórico</Link><Link aria-current={current.id === 'favoritas' ? 'page' : undefined} to="/minha-conta?secao=favoritas">Favoritos</Link></nav>
         {records.length ? <ul className="account-records">{records.map(record => <li key={record.id}>
           <span className="account-record-icon">{record.area === 'cabelo' ? <Scissors size={22} /> : <Sparkles size={22} />}</span>
-          <button type="button" className="account-record-title" onClick={() => setViewId(record.id)}><strong>{record.title}</strong><time dateTime={record.date}>{date(record.date)}</time><span>Consultoria de {record.area}</span></button>
+          <button type="button" className="account-record-title" onClick={() => {
+            if (record.result.consulta_id) {
+              navigate(`/consultoria/${record.area}/resultado?consulta=${encodeURIComponent(record.result.consulta_id)}`);
+            } else setViewId(record.id);
+          }}><strong>{record.title}</strong><time dateTime={record.date}>{date(record.date)}</time><span>Consultoria de {record.area}</span></button>
           <div className="account-record-actions"><button type="button" className="text-link" onClick={() => setReviewId(record.id)}>{record.review ? `${'★'.repeat(record.review.stars)} · Editar avaliação` : '☆ Avaliar'}</button>
             <button type="button" className="icon-button" aria-label={record.favorite ? `Remover ${record.title} dos favoritos` : `Favoritar ${record.title}`} aria-pressed={record.favorite} onClick={() => favorite(record)}><Heart size={20} fill={record.favorite ? 'currentColor' : 'none'} /></button>
           </div>
@@ -104,7 +108,7 @@ export function AccountPage() {
       catch (error) { fail(error); }
     }}><label>Como você prefere ser chamado?<input name="name" maxLength={80} defaultValue={data.preferences.displayName || user.nome} required autoComplete="nickname" /></label><p>Isso personaliza sua experiência aqui. Seu nome e e-mail de cadastro permanecem os mesmos.</p><div className="modal-actions"><button className="action-link action-link--primary">Salvar</button><button type="button" className="action-link action-link--outline" onClick={() => setEditing(false)}>Cancelar</button></div></form></Modal>}
     {reviewing && <ReviewModal key={reviewing.id} record={reviewing} onClose={() => setReviewId(undefined)} />}
-    {viewing && <Modal wide title="Sua consulta salva" onClose={() => setViewId(undefined)}><GuidedResults result={viewing.result} area={viewing.area} answers={viewing.answers} resultId={viewing.id} fromHistory /></Modal>}
+    {viewing && <Modal wide title="Sua consulta salva" onClose={() => setViewId(undefined)}><GuidedResults result={viewing.result} area={viewing.area} /></Modal>}
     {clear && <Modal title="Limpar meu histórico?" onClose={() => setClear(false)}><p>As consultas salvas, os favoritos e suas avaliações serão removidos deste navegador. Seus dados de cadastro e preferências serão mantidos.</p><div className="modal-actions"><button type="button" className="action-link action-link--outline" onClick={() => setClear(false)}>Cancelar</button><button type="button" className="action-link action-link--primary" onClick={() => { try { update(value => ({ ...value, records: [] })); setClear(false); toast({ title: 'Histórico limpo', message: 'Você pode começar uma nova consultoria quando quiser.' }); } catch (error) { fail(error); } }}>Limpar histórico</button></div></Modal>}
   </div>;
 }

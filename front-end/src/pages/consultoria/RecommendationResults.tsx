@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import type { Journey, Recommendation } from '../../services/api/consultation';
-import { PhotoSimulation } from './PhotoSimulation';
 import { saveRecommendation } from './savedRecommendations';
 
 export function RecommendationResults({ area, results }: { area: Journey; results: Recommendation[] }) {
-  const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState('');
 
   function save(result: Recommendation, favorite: boolean) {
@@ -26,12 +24,9 @@ export function RecommendationResults({ area, results }: { area: Journey; result
         <div className="recommendation-actions">
           <button className="text-link" type="button" onClick={() => save(result, false)}>Salvar no histórico</button>
           <button className="text-link" type="button" onClick={() => save(result, true)}>Favoritar</button>
-          <button className="text-link" type="button" aria-pressed={selected === result.estilo}
-            onClick={() => setSelected(selected === result.estilo ? null : result.estilo)}>Simular na foto</button>
         </div>
       </li>)}
     </ol>
     <p role="status">{feedback}</p>
-    {selected && <PhotoSimulation key={selected} area={area} style={selected} />}
   </section>;
 }

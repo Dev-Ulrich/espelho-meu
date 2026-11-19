@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import type { ConsultationArea } from '../../services/api/questionnaire';
 import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
 import makeupPortrait from '../../assets/figma/consultoria-maquiagem.webp';
-import { PhotoSimulation } from './PhotoSimulation';
 import { CompareStyles, type ComparisonStyle } from './CompareStyles';
 import styles from '../authenticated/workspace.module.css';
 import guided from './guidedConsultation.module.css';
@@ -12,6 +11,7 @@ type Cut = { id: string; nome: string; motivo: string; como_pedir: string; obser
 type Product = { nome: string; preco?: string | null; atributos?: string[]; ajustes: string[]; url?: string };
 type ProductGroups = Record<string, Product[]>;
 export type ConsultationResult = {
+  consulta_id?: string;
   facial: { formato?: string | null; avisos: string[]; origem?: 'foto' | 'manual'; dica?: string | null };
   maquiagem?: { recomendacao: string; sugestao_modelo?: string | null; aplicacao: string; pele_dica: string; produtos: ProductGroups; dica_produtos: string };
   cabelo?: { cortes: Cut[]; coloracao: string; dica_produtos: string; produtos: ProductGroups };
@@ -33,7 +33,7 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
     }));
 
     const hairstyles = result.cabelo.cortes.flatMap(cut => cut.penteados.map((name, index) => ({
-      id: `penteado-${cut.id}-${index}-${name}`,
+      id: `penteado-${cut.id}-${index}`,
       name,
       image: hairPortrait,
       details: {
@@ -95,22 +95,16 @@ function RecommendedProducts({ products }: { products: ProductGroups }) {
 type GuidedResultsProps = {
   result: ConsultationResult;
   area: ConsultationArea;
-  answers?: Record<string, string | string[]>;
-  resultId?: string;
-  fromHistory?: boolean;
 };
 
 export function GuidedResults({ result, area }: GuidedResultsProps) {
   const { cabelo, maquiagem, facial } = result;
-  const [simulationStyle, setSimulationStyle] = useState('');
   const title = useRef<HTMLHeadingElement>(null);
-  const simulation = useRef<HTMLHeadingElement>(null);
   const leadCut = cabelo?.cortes[0];
   const lead = area === 'cabelo' ? leadCut?.nome : maquiagem?.recomendacao;
   const comparisonStyles = buildComparisonStyles(result, area);
 
   useEffect(() => { title.current?.focus({ preventScroll: true }); }, []);
-  useEffect(() => { if (simulationStyle) simulation.current?.focus(); }, [simulationStyle]);
 
   return <div className={guided.results}>
     <header>
@@ -137,7 +131,6 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
         <p>{cut.como_pedir}</p>
         {cut.observacoes.map((value, index) => <p key={index}>{value}</p>)}
         {!!cut.penteados.length && <div><h3>Penteados</h3><ul>{cut.penteados.map((value, index) => <li key={index}>{value}</li>)}</ul></div>}
-        <button type="button" className="action-link action-link--outline" onClick={() => setSimulationStyle(cut.nome)}>Simular este corte</button>
       </article>)}
       <section className={guided.resultCard}>
         <h2>Coloração e cuidados</h2><p>{cabelo.coloracao}</p><p>{cabelo.dica_produtos}</p>
@@ -148,7 +141,6 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
       <section className={guided.resultCard}>
         <h2>Aplicação e acabamento</h2><p>{maquiagem.pele_dica}</p>
         {maquiagem.sugestao_modelo && <p>Outra sugestão: {maquiagem.sugestao_modelo}.</p>}
-        <button type="button" className="action-link action-link--outline" onClick={() => setSimulationStyle(maquiagem.recomendacao)}>Simular este acabamento</button>
       </section>
       <section className={guided.resultCard}>
         <h2>Produtos e tonalidade</h2><p>{maquiagem.dica_produtos}</p>
@@ -156,11 +148,7 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
       </section>
     </>}
     {comparisonStyles.length > 0 && <div className={guided.resultCard}>
-      <CompareStyles key={`comparacao-${area}`} area={area} items={comparisonStyles} />
-    </div>}
-    {simulationStyle && <div className={guided.resultCard}>
-      <h2 ref={simulation} tabIndex={-1}>Simulação na sua foto</h2>
-      <PhotoSimulation key={simulationStyle} area={area} style={simulationStyle} />
+      <CompareStyles key={result.consulta_id ?? area} area={area} items={comparisonStyles} resultId={result.consulta_id} />
     </div>}
     <div className={guided.reviewActions}>
       <Link className="action-link action-link--primary" to={`/consultoria/${area}/revisao`}>Rever minhas preferências</Link>

@@ -21,7 +21,9 @@
 .recommendation-actions { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 4px; }
 .consultation-page .recommendation-actions button { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0; text-align: left; }
 .photo-simulation input:not([type="checkbox"]) { display: block; max-width: 100%; }
-.photo-simulation input[type="password"] { width: 100%; margin-top: 4px; padding: 8px; border: 1px solid var(--line); }
 .photo-simulation .simulation-consent { display: flex; gap: 8px; align-items: baseline; }
 .photo-simulation figure { margin-top: 16px; }
 .photo-simulation img { max-width: 100%; border-radius: 8px; }
+
+.photo-simulation form, .photo-simulation fieldset { display: grid; gap: 12px; min-width: 0; }
+.photo-simulation form > button { justify-self: start; }

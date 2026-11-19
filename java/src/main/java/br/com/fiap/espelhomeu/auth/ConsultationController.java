@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
@@ -17,26 +18,31 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.List;
+import java.util.UUID;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @RestController
 @RequestMapping("/consultoria/{area:cabelo|maquiagem}")
 public class ConsultationController {
     private final RestClient flask;
-    private final RestClient simulation;
+    private final ConsultationSimulations simulations;
+    private final ObjectMapper json;
     private final String secret;
 
     public ConsultationController(
             @Value("${ESPELHO_IA_URL:https://espelho-meu-ia.onrender.com}") String url,
-            @Value("${ESPELHO_IA_INTERNAL_KEY:}") String secret) {
+            @Value("${ESPELHO_IA_INTERNAL_KEY:}") String secret,
+            ConsultationSimulations simulations, ObjectMapper json) {
         var http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
         var factory = new JdkClientHttpRequestFactory(http);
         factory.setReadTimeout(Duration.ofSeconds(40));
         var client = RestClient.builder().requestFactory(factory).baseUrl(url)
                 .defaultHeader("X-Espelho-Internal-Key", secret.trim());
         this.flask = client.build();
-        var simulationFactory = new JdkClientHttpRequestFactory(http);
-        simulationFactory.setReadTimeout(Duration.ofSeconds(165));
-        this.simulation = client.requestFactory(simulationFactory).build();
+        this.simulations = simulations;
+        this.json = json;
         this.secret = secret.trim();
     }
 
@@ -45,24 +51,41 @@ public class ConsultationController {
         return forward(flask.get().uri("/api/privado/{area}/questionario", area));
     }
 
-    @GetMapping("/simulacao")
-    public ResponseEntity<byte[]> simulationStatus() {
-        return forward(flask.get().uri("/api/privado/simulacoes/status"));
+    @GetMapping("/resultados/{id}")
+    public ResponseEntity<ObjectNode> result(@PathVariable String area, @PathVariable UUID id,
+                                             @AuthenticationPrincipal AuthService.Account account) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(simulations.result(id.toString(), account.id(), area));
     }
 
-    @PostMapping(value = "/simulacao", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<byte[]> simulate(@PathVariable String area, @RequestParam String estilo,
-                                           @RequestHeader("X-Simulacao-Codigo") String codigo,
-                                           @RequestParam MultipartFile foto) throws IOException {
-        var parts = new LinkedMultiValueMap<String, Object>();
-        parts.add("estilo", estilo);
-        addPhoto(parts, foto);
-        return forward(simulation.post().uri("/api/privado/simulacoes/{area}", area)
-                .header("X-Simulacao-Codigo", codigo).contentType(MediaType.MULTIPART_FORM_DATA).body(parts));
+    @GetMapping("/resultados/{id}/simulacoes")
+    public ResponseEntity<ConsultationSimulations.Progress> progress(@PathVariable String area, @PathVariable UUID id,
+                                                                     @AuthenticationPrincipal AuthService.Account account) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(simulations.progress(id.toString(), account.id(), area));
+    }
+
+    @PostMapping(value = "/resultados/{id}/simulacoes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ConsultationSimulations.Progress> enqueue(
+            @PathVariable String area, @PathVariable UUID id, @AuthenticationPrincipal AuthService.Account account,
+            @RequestParam List<String> cards, @RequestParam(defaultValue = "false") boolean autoriza,
+            @RequestParam(required = false) MultipartFile foto) throws IOException {
+        return ResponseEntity.accepted().cacheControl(CacheControl.noStore())
+                .body(simulations.enqueue(id.toString(), account.id(), area, cards, autoriza,
+                        foto == null ? null : foto.getBytes()));
+    }
+
+    @GetMapping("/resultados/{id}/simulacoes/imagem")
+    public ResponseEntity<byte[]> preview(@PathVariable String area, @PathVariable UUID id,
+                                          @AuthenticationPrincipal AuthService.Account account,
+                                          @RequestParam String card) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.IMAGE_JPEG)
+                .body(simulations.image(id.toString(), account.id(), area, card));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<byte[]> submit(@PathVariable String area, @RequestParam String respostas,
+    public ResponseEntity<?> submit(@PathVariable String area, @RequestParam String respostas,
+                                    @AuthenticationPrincipal AuthService.Account account,
                                          @RequestParam(required = false) MultipartFile foto) throws IOException {
         if (respostas.length() > 20_000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Questionário acima do limite.");
@@ -70,8 +93,21 @@ public class ConsultationController {
         var parts = new LinkedMultiValueMap<String, Object>();
         parts.add("respostas", respostas);
         addPhoto(parts, foto);
-        return forward(flask.post().uri("/api/privado/{area}/analisar", area)
+        var response = forward(flask.post().uri("/api/privado/{area}/analisar", area)
                 .contentType(MediaType.MULTIPART_FORM_DATA).body(parts));
+        if (!response.getStatusCode().is2xxSuccessful()) return response;
+        ObjectNode result;
+        try {
+            var decoded = json.readTree(response.getBody());
+            if (!(decoded instanceof ObjectNode object) || !object.path(area).isObject()) {
+                throw new IllegalArgumentException();
+            }
+            result = object;
+        } catch (RuntimeException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "A consultoria retornou um resultado incompleto.");
+        }
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(simulations.save(account.id(), area, result));
     }
 
     private void addPhoto(LinkedMultiValueMap<String, Object> parts, MultipartFile foto) throws IOException {
@@ -88,13 +124,11 @@ public class ConsultationController {
         }
         try {
             return request.exchange((sent, response) -> {
-                boolean jpeg = response.getStatusCode().is2xxSuccessful()
-                        && MediaType.IMAGE_JPEG.isCompatibleWith(response.getHeaders().getContentType());
-                int limit = jpeg ? 5 * 1024 * 1024 : 1024 * 1024;
+                int limit = 1024 * 1024;
                 byte[] body = response.getBody().readNBytes(limit + 1);
                 if (body.length > limit) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Resposta da IA acima do limite.");
                 return ResponseEntity.status(response.getStatusCode())
-                        .contentType(jpeg ? MediaType.IMAGE_JPEG : MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .cacheControl(CacheControl.noStore()).body(body);
             });
         } catch (RestClientException ex) {
