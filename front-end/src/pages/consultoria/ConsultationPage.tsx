@@ -5,6 +5,7 @@ import { ActionLink } from '../../components/ui/ActionLink';
 import close from '../../assets/figma/consultoria-IconeClose.svg';
 import './consultation.css';
 import { HairQuestionnaire } from './HairQuestionnaire';
+import { MakeupQuestionnaire } from './MakeupQuestionnaire';
 
 export function ConsultationPage() {
   const [params, setParams] = useSearchParams();
@@ -20,7 +21,7 @@ export function ConsultationPage() {
         <span>{value === 'cabelo' ? 'Consultoria capilar' : 'Maquiagem'}</span>
       </label>)}
     </div></fieldset>
-    {journey === 'cabelo' && <HairQuestionnaire />}
+    {journey === 'cabelo' ? <HairQuestionnaire /> : <MakeupQuestionnaire />}
     <p className="notice">Para uma consultoria personalizada, você precisa entrar na sua conta. A autenticação e o envio de fotos ainda não estão disponíveis.</p>
     <div className="flex flex-wrap gap-3"><ActionLink to={`${paths.entrar}?jornada=${journey}`}>Entrar para continuar</ActionLink><ActionLink to={`${paths.cadastro}?jornada=${journey}`} variant="outline">Criar conta</ActionLink></div>
     <Link className="text-link" to={journey === 'cabelo' ? paths.cabelo : paths.maquiagem}>Explorar referências de {journey} sem entrar</Link>

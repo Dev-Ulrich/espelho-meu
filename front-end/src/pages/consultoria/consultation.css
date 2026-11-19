@@ -10,10 +10,10 @@
 .journey-options label:has(:checked) { background: var(--purple); color: white; }
 .journey-options input { accent-color: var(--purple); }
 .consultation-page .text-link { display: inline-block; margin-top: 20px; }
-.hair-preview { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
-.hair-preview h2 { font: 600 1.75rem/1.2 var(--heading-font); color: var(--petrol); margin-bottom: 10px; }
-.hair-preview fieldset { display: grid; gap: 8px; margin-block: 18px; }
-.hair-preview label, .hair-preview h3 { font-weight: 700; color: var(--petrol); }
-.hair-preview select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); }
-.hair-preview button:disabled { opacity: .65; cursor: wait; }
+:is(.hair-preview, .makeup-preview) { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); }
+:is(.hair-preview, .makeup-preview) h2 { font: 600 1.75rem/1.2 var(--heading-font); color: var(--petrol); margin-bottom: 10px; }
+:is(.hair-preview, .makeup-preview) fieldset { display: grid; gap: 8px; margin-block: 18px; }
+:is(.hair-preview, .makeup-preview) label, :is(.hair-preview, .makeup-preview) h3 { font-weight: 700; color: var(--petrol); }
+:is(.hair-preview, .makeup-preview) select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 12px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--ink); }
+:is(.hair-preview, .makeup-preview) button:disabled { opacity: .65; cursor: wait; }
 @media (max-width: 480px) { .consultation-page { padding: 28px 20px; margin-block: 24px; } }

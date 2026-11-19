@@ -32,8 +32,16 @@ try {
     if (url === '/cabelo?textura=Lisa') assert.ok(!html.includes('aria-label="Ver detalhes de Crespo'));
     if (url === '/maquiagem?categoria=Olhos') assert.ok(!html.includes('aria-label="Ver detalhes de Glow'));
     if (url === '/consultoria?jornada=maquiagem') assert.ok(html.includes('/entrar?jornada=maquiagem'));
-    if (url === '/consultoria?jornada=maquiagem') assert.ok(!html.includes('Gerar recomendação'));
+    if (url === '/consultoria?jornada=maquiagem') {
+      assert.ok(html.includes('Prévia de recomendação de maquiagem') && html.includes('Gerar recomendação'));
+      assert.equal((html.match(/<select[^>]*required/g) ?? []).length, 3);
+      for (const field of ['tipo_pele', 'ocasiao', 'acabamento']) assert.ok(html.includes(`name="${field}"`));
+      for (const value of ['seca', 'mista', 'oleosa', 'dia_a_dia', 'trabalho', 'evento', 'natural', 'matte', 'luminoso']) assert.ok(html.includes(`value="${value}"`));
+      assert.ok(html.includes('/cadastro?jornada=maquiagem'));
+      assert.ok(!html.includes('Prévia de recomendação capilar'));
+    }
     if (url === '/consultoria?jornada=cabelo') {
+      assert.ok(!html.includes('Prévia de recomendação de maquiagem'));
       assert.equal((html.match(/<select[^>]*required/g) ?? []).length, 3);
       assert.ok(html.includes('/entrar?jornada=cabelo') && html.includes('/cadastro?jornada=cabelo'));
     }
