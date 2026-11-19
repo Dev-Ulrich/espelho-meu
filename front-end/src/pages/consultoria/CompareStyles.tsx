@@ -22,7 +22,7 @@ export function CompareStyles({ items, area }: { items: ComparisonStyle[]; area:
     catch { toast({ title: 'Limite atingido!', message: 'Remova um dos 3 estilos para adicionar outro.', action: { label: 'Ver comparação', run: () => setOpen(true) } }); }
   }
   return <section className="style-comparison" aria-label={`Comparar estilos de ${area}`}>
-    <div className="experience-section-heading"><div><p className="experience-eyebrow"><Columns3 size={16} /> Compare possibilidades</p>
+    <div className="experience-section-heading">    <div><p className="experience-eyebrow"><Columns3 size={16} /> Compare estilos na pós consultoria</p>
       <h2>Qual combina mais com você?</h2><p>Selecione até três estilos e veja os detalhes lado a lado.</p></div>
       <button type="button" className="action-link action-link--primary" disabled={!chosen.length} onClick={() => setOpen(true)}>Comparar ({chosen.length}/3)</button>
     </div>

@@ -4,6 +4,7 @@ import type { ConsultationArea } from '../../services/api/questionnaire';
 import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
 import makeupPortrait from '../../assets/figma/consultoria-maquiagem.webp';
 import { PhotoSimulation } from './PhotoSimulation';
+import { CompareStyles, type ComparisonStyle } from './CompareStyles';
 import styles from '../authenticated/workspace.module.css';
 import guided from './guidedConsultation.module.css';
 
@@ -15,6 +16,69 @@ export type ConsultationResult = {
   maquiagem?: { recomendacao: string; sugestao_modelo?: string | null; aplicacao: string; pele_dica: string; produtos: ProductGroups; dica_produtos: string };
   cabelo?: { cortes: Cut[]; coloracao: string; dica_produtos: string; produtos: ProductGroups };
 };
+
+function buildComparisonStyles(result: ConsultationResult, area: ConsultationArea): ComparisonStyle[] {
+  if (area === 'cabelo' && result.cabelo) {
+    const cutItems = result.cabelo.cortes.map(cut => ({
+      id: cut.id,
+      name: cut.nome,
+      image: hairPortrait,
+      details: {
+        Tipo: 'Corte',
+        Motivo: cut.motivo,
+        'Como pedir': cut.como_pedir,
+        Penteados: cut.penteados.join(', ') || 'Não informado',
+        Observações: cut.observacoes.join(' '),
+      },
+    }));
+
+    const hairstyles = result.cabelo.cortes.flatMap(cut => cut.penteados.map((name, index) => ({
+      id: `penteado-${cut.id}-${index}-${name}`,
+      name,
+      image: hairPortrait,
+      details: {
+        Tipo: 'Penteado',
+        'Corte base': cut.nome,
+        Motivo: cut.motivo,
+        Observações: cut.observacoes.join(' '),
+      },
+    })));
+
+    return [...cutItems, ...hairstyles].filter((item, index, items) =>
+      items.findIndex(other => other.name === item.name) === index);
+  }
+
+  if (area === 'maquiagem' && result.maquiagem) {
+    const makeupItems: ComparisonStyle[] = [{
+      id: 'maquiagem-principal',
+      name: result.maquiagem.recomendacao,
+      image: makeupPortrait,
+      details: {
+        Tipo: 'Maquiagem',
+        Aplicação: result.maquiagem.aplicacao,
+        'Dica de pele': result.maquiagem.pele_dica,
+      },
+    }];
+
+    if (result.maquiagem.sugestao_modelo) {
+      makeupItems.push({
+        id: 'maquiagem-alternativa',
+        name: result.maquiagem.sugestao_modelo,
+        image: makeupPortrait,
+        details: {
+          Tipo: 'Maquiagem alternativa',
+          Aplicação: result.maquiagem.aplicacao,
+          'Dica de pele': result.maquiagem.pele_dica,
+        },
+      });
+    }
+
+    return makeupItems.filter((item, index, items) =>
+      items.findIndex(other => other.name === item.name) === index);
+  }
+
+  return [];
+}
 
 function RecommendedProducts({ products }: { products: ProductGroups }) {
   return <div className={guided.productGroups}>{Object.entries(products).map(([category, items]) => <section key={category}>
@@ -43,6 +107,7 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
   const simulation = useRef<HTMLHeadingElement>(null);
   const leadCut = cabelo?.cortes[0];
   const lead = area === 'cabelo' ? leadCut?.nome : maquiagem?.recomendacao;
+  const comparisonStyles = buildComparisonStyles(result, area);
 
   useEffect(() => { title.current?.focus({ preventScroll: true }); }, []);
   useEffect(() => { if (simulationStyle) simulation.current?.focus(); }, [simulationStyle]);
@@ -90,6 +155,9 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
         <RecommendedProducts products={maquiagem.produtos} />
       </section>
     </>}
+    {comparisonStyles.length > 0 && <div className={guided.resultCard}>
+      <CompareStyles key={`comparacao-${area}`} area={area} items={comparisonStyles} />
+    </div>}
     {simulationStyle && <div className={guided.resultCard}>
       <h2 ref={simulation} tabIndex={-1}>Simulação na sua foto</h2>
       <PhotoSimulation key={simulationStyle} area={area} style={simulationStyle} />
