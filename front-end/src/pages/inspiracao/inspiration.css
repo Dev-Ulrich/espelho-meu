@@ -17,6 +17,11 @@
 .filter-selects { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font: .875rem var(--ui-font); }
 .filter-selects select { padding: 6px; margin-left: 8px; border-bottom: 1px solid var(--rose); background: var(--paper); }
 .result-count { font: .8rem var(--ui-font); margin-block: 12px; }
+.product-demo summary { cursor: pointer; font-weight: 700; }
+.product-demo fieldset { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px; margin-block: 16px; }
+.product-demo label { display: grid; gap: 6px; color: var(--petrol); }
+.product-demo input, .product-demo select { min-width: 0; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.product-demo button:disabled { opacity: .65; cursor: default; }
 .inspiration-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
 .inspiration-card { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: 0 2px 8px #241a1f0a; }
 .inspiration-card__photo { position: relative; height: 125px; background: var(--line); overflow: hidden; }

@@ -7,6 +7,7 @@ export interface RequestOptions<T> {
   headers?: HeadersInit;
   credentials?: RequestCredentials;
   signal?: AbortSignal;
+  expectedStatus?: number;
   // Valida dados recebidos: TypeScript sozinho não valida o JSON da rede.
   // Respostas vazias (incluindo 204) chegam como undefined.
   decode: (data: unknown) => T;
@@ -38,6 +39,9 @@ export function createApiClient(baseUrl?: string, fetcher: typeof fetch = fetch)
       }
       // Preserva o status HTTP mesmo quando o servidor retorna HTML ou texto de erro.
       if (!response.ok) throw httpError(response.status);
+      if (options.expectedStatus !== undefined && response.status !== options.expectedStatus) {
+        throw new ApiError('invalid-response', `Status inesperado: HTTP ${response.status}; esperado ${options.expectedStatus}.`, response.status);
+      }
       let text: string;
       try { text = response.status === 204 ? '' : await response.text(); }
       catch {
