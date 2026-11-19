@@ -43,7 +43,7 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
         if caminho.startswith("/api/privado/"):
             chave = request.headers.get("X-Espelho-Internal-Key", "").encode("utf-8")
             if len(chave_interna) < 32 or not compare_digest(chave, chave_interna):
-                return jsonify(erro="Acesso restrito."), 403
+                return rejeitar_edicao("Acesso restrito.", 403)
         elif not demo_local and (
             request.endpoint == "inicio_demo" or caminho == "/demo"
             or caminho.startswith(("/api/demo/", "/api/recomendacoes/", "/recomendacoes/",
@@ -100,45 +100,57 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
             alternativas=listar_alternativas(area, dados, principal, perfis[area]),
         )
 
+    def rejeitar_edicao(mensagem, status):
+        return jsonify(erro=mensagem), status, {"X-Espelho-Edit-Status": "not-processed"}
+
     @app.get("/api/simulacoes/status")
-    @app.get("/api/privado/simulacoes/status")
+    @app.get("/api/privado/edicoes-consulta/status")
     def status_simulacao():
-        return jsonify(disponivel=bool(chave_openai and codigo_demo))
+        privada = request.path.startswith("/api/privado/")
+        return jsonify(disponivel=bool(chave_openai and (privada or codigo_demo)))
 
     @app.post("/api/simulacoes/<area>")
-    @app.post("/api/privado/simulacoes/<area>")
+    @app.post("/api/privado/edicoes-consulta/<area>")
     def simular(area):
+        privada = request.path.startswith("/api/privado/")
         if area not in CAMPOS:
-            return jsonify(erro="Área desconhecida."), 404
-        if not (chave_openai and codigo_demo and area in modelos):
-            return jsonify(erro="A edição de fotos ainda não foi ativada neste servidor."), 503
+            return rejeitar_edicao("Área desconhecida.", 404)
+        if not chave_openai or (not privada and not (codigo_demo and area in modelos)):
+            return rejeitar_edicao("A edição de fotos ainda não foi ativada neste servidor.", 503)
 
-        autorizado = request.headers.get("X-Simulacao-Codigo", "").encode("utf-8")
-        if not compare_digest(autorizado, codigo_demo.encode("utf-8")):
-            return jsonify(erro="Código de demonstração inválido."), 403
+        if not privada:
+            autorizado = request.headers.get("X-Simulacao-Codigo", "").encode("utf-8")
+            if not compare_digest(autorizado, codigo_demo.encode("utf-8")):
+                return rejeitar_edicao("Código de demonstração inválido.", 403)
 
         request.max_content_length = MAX_FOTO + 64 * 1024
         if request.mimetype != "multipart/form-data":
-            return jsonify(erro="Envie a foto como multipart/form-data."), 415
-        estilo = request.form.get("estilo")
+            return rejeitar_edicao("Envie a foto como multipart/form-data.", 415)
+        estilo = request.form.get("estilo", "").strip()
         arquivo = request.files.get("foto")
-        estilo_valido = estilo in modelos[area].classes_ or (area == "cabelo" and estilo in NOMES_CORTES)
+        estilo_valido = bool(estilo) and len(estilo) <= 1000 and (
+            privada or estilo in modelos[area].classes_ or (area == "cabelo" and estilo in NOMES_CORTES)
+        )
         if not estilo_valido or not arquivo:
-            return jsonify(erro="Selecione uma foto e uma sugestão válida."), 422
+            return rejeitar_edicao("Selecione uma foto e uma sugestão válida.", 422)
         try:
             foto, tamanho = preparar_foto(arquivo.stream)
         except ValueError as erro:
-            return jsonify(erro=str(erro)), 422
+            return rejeitar_edicao(str(erro), 422)
 
         try:
             imagem = editar_foto(foto, tamanho, area, estilo, chave_openai, modelo_imagem)
+        except requests.ConnectTimeout:
+            return rejeitar_edicao("O serviço de edição está temporariamente indisponível.", 503)
         except requests.Timeout:
-            return jsonify(erro="A edição demorou demais. Tente novamente mais tarde."), 504
+            return jsonify(erro="A edição demorou e o resultado não pôde ser confirmado."), 504
         except (requests.RequestException, ValueError) as erro:
             provedor = getattr(erro, "response", None)
-            app.logger.warning("Falha na edição de imagem: %s (HTTP %s)", type(erro).__name__,
-                               provedor.status_code if provedor is not None else "indisponível")
-            return jsonify(erro="O serviço de edição não conseguiu gerar a imagem."), 502
+            status = provedor.status_code if provedor is not None else None
+            app.logger.warning("Falha na edição de imagem: %s (HTTP %s)", type(erro).__name__, status)
+            if status in (401, 403, 429):
+                return rejeitar_edicao("O serviço de edição recusou a solicitação.", 503)
+            return jsonify(erro="O serviço de edição não retornou uma imagem."), 502
 
         return app.response_class(imagem, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
@@ -146,7 +158,7 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
     def corpo_grande(_erro):
         if request.path.startswith("/api/produtos-demo/"):
             return jsonify(erro="O corpo do cadastro excede o limite de 8 KB."), 413
-        return jsonify(erro="A foto deve ter até 5 MB."), 413
+        return rejeitar_edicao("A foto deve ter até 5 MB.", 413)
 
     if (pasta_front / "index.html").is_file():
         @app.get("/", defaults={"caminho": ""})

@@ -26,15 +26,11 @@ npm run preview
 
 As entradas públicas são `/`, `/sobre`, `/integrantes`, `/integrantes/:id`, `/faq`, `/contato`, `/entrar` e `/cadastro`. Na landing, “Começar consultoria” abre `/entrar` e preserva `/consultoria` como destino após o login; quem já está autenticado segue diretamente para a consultoria. A conta fica em `/minha-conta`. Em `/consultoria`, escolha a jornada de cabelo ou maquiagem. Ambas têm etapas de perfil, preferências, produtos, revisão e resultado. A análise facial com foto é opcional na jornada capilar. Sobre, Integrantes, FAQ e Contato estão disponíveis sem login no menu e no rodapé. O painel `/admin` exige a role `ADMIN` e oferece os cadastros de produtos, usuários e cortes.
 
-A simulação visual aparece no resultado de cada jornada. Seu uso depende da configuração de `OPENAI_API_KEY` e `SIMULACAO_CODIGO` no Flask, além do consentimento para enviar a foto. A recuperação de senha depende de um serviço de envio de e-mails e ainda não está disponível.
+A simulação usa os estilos selecionados na comparação do resultado de cabelo ou maquiagem. O envio exige consentimento. Cada consulta admite até três prévias. A recuperação de senha depende de um serviço de envio de e-mails e ainda não está disponível.
 
 O front acessa o Java no mesmo domínio pela rota `/api/java`. O proxy do Vite aponta para `127.0.0.1:8080` e o da Vercel para o serviço Java. A sessão usa cookie HttpOnly, e as requisições de escrita incluem o token obtido em `GET /auth/csrf`. O Flask recebe as chamadas de consultoria somente pelo Java. A [configuração da API Java](../java/README.md) descreve a migração e as variáveis necessárias.
 
-### Ativar a simulação de fotos
-
-1. Tenha faturamento ativo no [projeto da API da OpenAI](https://platform.openai.com/settings/organization/billing/overview) e crie uma [chave de API](https://platform.openai.com/api-keys) para ele.
-2. No [Render](https://dashboard.render.com/), abra o serviço Flask `espelho-meu-ia` e vá em **Environment**. Configure `OPENAI_API_KEY` com a chave da OpenAI e `SIMULACAO_CODIGO` com um código separado, que será digitado na tela. Guarde a chave da OpenAI apenas no serviço Flask. O modelo padrão é `gpt-image-2.6-sunburst`. Configure `OPENAI_IMAGE_MODEL` somente para escolher outro modelo de edição compatível.
-3. Salve e publique o serviço Flask. No site, entre na sua conta, termine a consultoria capilar, clique em **Simular este corte**, envie uma foto autorizada e informe o código de demonstração. A foto editada aparece no resultado.
+Veja o [guia de ativação e teste da simulação](../java/README.md#publicar-e-medir-a-simulação).
 
 ## Organização e revisão
 

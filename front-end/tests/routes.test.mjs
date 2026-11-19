@@ -48,7 +48,7 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }
     for (const path of ['/catalogo', '/recuperar-senha']) {
-      assert.equal(render(path), '');
+      assert.match(render(path), /^<div class="toast-region"[^>]+><\/div>$/);
     }
 
     const { GuidedResults } = await server.ssrLoadModule('/src/pages/consultoria/GuidedResults.tsx');
@@ -60,7 +60,8 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
       } },
     }));
     assert.match(makeup, /maquiagem luminosa.*Base fluida.*R\$ 42,00.*Cobertura média/s);
-    assert.match(makeup, /Simular este acabamento/);
+    assert.match(makeup.replaceAll('<!-- -->', ''), /Comparar \(0\/1\)/);
+    assert.doesNotMatch(makeup, /Simular este acabamento/);
     assert.match(makeup, /href="\/consultoria\/maquiagem\/revisao"/);
   } finally {
     await server.close();

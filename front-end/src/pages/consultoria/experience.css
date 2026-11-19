@@ -41,3 +41,7 @@
 @media (max-width: 650px) { .result-showcase { grid-template-columns: 1fr; padding: 16px; } .comparison-options { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (prefers-reduced-motion: reduce) { .comparison-option { transition: none; transform: none !important; } }
 [data-reduced-motion] .comparison-option { transition: none; transform: none !important; }
+
+.comparison-simulation { display: grid; gap: 8px; justify-items: start; }
+.comparison-simulation .photo-simulation { width: 100%; }
+.comparison-preview { display: block; width: 100%; max-width: 280px; height: auto; margin-inline: auto; border-radius: 12px; }
