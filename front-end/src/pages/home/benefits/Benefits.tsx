@@ -8,7 +8,7 @@ const benefits = [
   { title: 'Personalização', description: 'Recomendações sob medida para o seu estilo, traços e objetivos.', icon: sparkles },
   { title: 'Inclusão', description: 'Beleza para todas as identidades, gêneros, tipos de cabelo e tons de pele.', icon: users },
   { title: 'Praticidade', description: 'Descubra, simule e compare looks de forma rápida e intuitiva.', icon: bolt },
-  { title: 'Autonomia', description: 'Inspiração, simulação e tecnologia para você escolher o que te faz bem.', icon: heart },
+  { title: 'Autonomia', description: 'Inspiração e recomendações para você escolher o que te faz bem.', icon: heart },
 ];
 
 export function Benefits() {

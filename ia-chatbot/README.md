@@ -38,3 +38,9 @@ Os dados de treino contêm 36 perfis sintéticos de cabelo e 27 de maquiagem rot
 
 Os notebooks incluem as métricas por classe e as matrizes de confusão. Para reproduzir o treinamento, execute os notebooks ou rode `python treinar.py` e reinicie a API.
 
+
+## Consultoria capilar autenticada
+
+A API Java chama `/api/privado/cabelo/questionario` e `/api/privado/cabelo/analisar` com a mesma `ESPELHO_IA_INTERNAL_KEY` configurada nos dois serviços. Para executar a demo antiga somente em desenvolvimento local, inicie o Flask com `ESPELHO_DEMO_LOCAL=1`.
+
+Para análise de formato facial em Linux, o MediaPipe precisa de EGL e GLES. A imagem do [Dockerfile](Dockerfile) inclui os pacotes `libegl1` e `libgles2` e executa o verificador durante o build.

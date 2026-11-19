@@ -16,7 +16,7 @@ from cortes import NOMES_CORTES
 from produto_demo import instalar_produto_demo
 
 
-def create_app(pasta_modelos=RAIZ / "modelos"):
+def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
     app = Flask(__name__, static_folder=None, template_folder="demo")
     pasta_front = Path(environ.get("ESPELHO_FRONT_DIST", RAIZ.parent / "front-end" / "dist")).resolve()
     chave_openai = environ.get("OPENAI_API_KEY", "").strip()
@@ -33,6 +33,23 @@ def create_app(pasta_modelos=RAIZ / "modelos"):
         arquivo = pasta_modelos / f"{area}.joblib"
         if arquivo.is_file():
             modelos[area] = joblib.load(arquivo)
+
+    chave_interna = environ.get("ESPELHO_IA_INTERNAL_KEY", "").strip().encode("utf-8")
+    demo_local = modo_teste or environ.get("ESPELHO_DEMO_LOCAL") == "1"
+
+    @app.before_request
+    def proteger_consultoria():
+        caminho = request.path
+        if caminho.startswith("/api/privado/"):
+            chave = request.headers.get("X-Espelho-Internal-Key", "").encode("utf-8")
+            if len(chave_interna) < 32 or not compare_digest(chave, chave_interna):
+                return jsonify(erro="Acesso restrito."), 403
+        elif not demo_local and (
+            request.endpoint == "inicio_demo" or caminho == "/demo"
+            or caminho.startswith(("/api/demo/", "/api/recomendacoes/", "/recomendacoes/",
+                                   "/api/simulacoes/", "/api/produtos-demo/"))
+        ):
+            return jsonify(erro="Acesse a consultoria pelo Espelho Meu."), 404
 
     @app.after_request
     def cors_front(resposta):

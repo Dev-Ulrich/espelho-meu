@@ -1,39 +1,32 @@
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 import { SiteLayout } from '../components/layout/SiteLayout';
 import { HomePage } from '../pages/home/HomePage';
-import { StarterPage } from '../pages/initial/StarterPage';
-import { InspirationPage } from '../pages/inspiracao/InspirationPage';
 import { AccessPage } from '../pages/acesso/AccessPage';
-import { AccountPage } from '../pages/conta/AccountPage';
-import { ConsultationPage } from '../pages/consultoria/ConsultationPage';
-import { CatalogPage } from '../pages/catalogo/CatalogPage';
-import { HelpPage } from '../pages/ajuda/HelpPage';
-import { AboutPage, ContactPage, MemberPage, TeamPage } from '../pages/institucional/InstitutionalPages';
+import { UserHomePage } from '../pages/authenticated/UserHomePage';
+import { HairConsultationPage } from '../pages/consultoria/HairConsultationPage';
+import { AdminPage } from '../pages/admin/AdminPage';
 import { paths } from './paths';
+import { RequireSession, SessionProvider } from './session';
 
 export function App() {
-  return (
-    <Routes>
-      <Route element={<SiteLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path={paths.cabelo} element={<InspirationPage key="cabelo" kind="cabelo" />} />
-        <Route path={paths.maquiagem} element={<InspirationPage key="maquiagem" kind="maquiagem" />} />
-        <Route path={paths.catalogo} element={<CatalogPage />} />
-        <Route path={paths.consultoria} element={<ConsultationPage />} />
-        <Route path={paths.ajuda} element={<HelpPage />} />
-        <Route path={paths.faq} element={<HelpPage faq />} />
-        <Route path={paths.sobre} element={<AboutPage />} />
-        <Route path={paths.contato} element={<ContactPage />} />
-        <Route path={paths.integrantes} element={<TeamPage />} />
-        <Route path={`${paths.integrantes}/:id`} element={<MemberPage />} />
-        <Route path="*" element={<StarterPage title="Página não encontrada" />} />
+  return <SessionProvider><Routes>
+    <Route element={<SiteLayout />}>
+      <Route index element={<HomePage />} />
+      <Route element={<RequireSession />}>
+        <Route path={paths.conta} element={<UserHomePage />} />
+        <Route path={paths.consultoria} element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
+        <Route path={paths.cabelo} element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
+        <Route path="/consultoria/cabelo" element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
+        <Route path="/consultoria/cabelo/:etapa" element={<HairConsultationPage />} />
       </Route>
-      <Route element={<SiteLayout withHeader={false} />}>
-        <Route path={paths.entrar} element={<AccessPage key="login" mode="login" />} />
-        <Route path={paths.cadastro} element={<AccessPage key="cadastro" mode="cadastro" />} />
-        <Route path={paths.recuperarSenha} element={<AccessPage key="recuperar" mode="recuperar" />} />
-        <Route path={paths.conta} element={<AccountPage />} />
+      <Route element={<RequireSession admin />}>
+        <Route path="/admin/:entidade?" element={<AdminPage />} />
       </Route>
-    </Routes>
-  );
+    </Route>
+    <Route element={<SiteLayout withHeader={false} />}>
+      <Route path={paths.entrar} element={<AccessPage key="login" mode="login" />} />
+      <Route path={paths.cadastro} element={<AccessPage key="cadastro" mode="cadastro" />} />
+    </Route>
+    <Route path="*" element={<Navigate to={paths.home} replace />} />
+  </Routes></SessionProvider>;
 }

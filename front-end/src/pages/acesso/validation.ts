@@ -1,5 +1,5 @@
 export type AccessMode = 'login' | 'cadastro' | 'recuperar';
-export interface AccessFields { name: string; email: string; phone: string; password: string; confirmation: string }
+export interface AccessFields { name: string; email: string; phone: string; password: string; confirmation: string; nascimento?: string }
 export type AccessErrors = Partial<Record<keyof AccessFields, string>>;
 
 export function validateAccess(mode: AccessMode, fields: AccessFields): AccessErrors {
@@ -12,6 +12,11 @@ export function validateAccess(mode: AccessMode, fields: AccessFields): AccessEr
   }
   if (mode !== 'recuperar' && !fields.password) errors.password = 'Informe sua senha.';
   if (mode === 'cadastro') {
+    if (fields.nascimento !== undefined) {
+      const now = new Date();
+      const today = [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(value => String(value).padStart(2, '0')).join('-');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(fields.nascimento) || fields.nascimento >= today) errors.nascimento = 'Informe uma data de nascimento válida.';
+    }
     if (fields.password.length < 8) errors.password = 'Use pelo menos 8 caracteres.';
     if (!fields.confirmation || fields.password !== fields.confirmation) errors.confirmation = 'As senhas precisam ser iguais.';
   }

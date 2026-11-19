@@ -3,15 +3,19 @@ import { paths } from '../../app/paths';
 import logo from '../../assets/logo.png';
 import { ActionLink } from '../ui/ActionLink';
 
-const menu = [
-  { to: paths.home, label: 'Início' },
-  { to: paths.cabelo, label: 'Cabelo' },
-  { to: paths.maquiagem, label: 'Maquiagem' },
-  { to: paths.catalogo, label: 'Catálogo' },
-  { to: paths.conta, label: 'Minha Conta' },
-];
+import { useSession } from '../../app/session';
 
 export function SiteHeader() {
+  const { state } = useSession();
+  const signedIn = state.status === 'signed-in';
+  const menu = [
+    { to: paths.home, label: 'Início' },
+    ...(signedIn ? [
+      { to: paths.consultoria, label: 'Consultoria' },
+      { to: paths.conta, label: 'Minha conta' },
+      ...(state.user.role === 'ADMIN' ? [{ to: '/admin', label: 'Administração' }] : []),
+    ] : []),
+  ];
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -24,7 +28,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="site-header__actions">
-          <ActionLink to={paths.entrar} variant="outline">Entrar</ActionLink>
+          {!signedIn && <ActionLink to={paths.entrar} variant="outline">Entrar</ActionLink>}
           <ActionLink to={paths.consultoria}>Começar agora</ActionLink>
         </div>
       </div>

@@ -1,28 +1,35 @@
 import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { paths } from '../../app/paths';
 import homeIcon from '../../assets/figma/cadastro-Vector.svg';
 import { validateAccess } from './validation';
 import type { AccessErrors, AccessFields, AccessMode } from './validation';
+import { useSession } from '../../app/session';
+import { privateApi } from '../../services/api/privateApi';
 import './access.css';
+import styles from './access.module.css';
 
 const copy = {
   cadastro: { eyebrow: 'CADASTRE-SE', title: 'Faça parte do Espelho Meu.', description: 'Crie sua conta para salvar suas preferências, receber recomendações personalizadas e explorar todos os recursos da plataforma.', headline: 'Crie sua conta e viva uma nova experiência de beleza.', action: 'Cadastrar-se' },
   login: { eyebrow: 'ENTRAR', title: 'Bem-vinda ao Espelho Meu.', description: 'Acesse sua conta para continuar sua jornada.', headline: 'Seu estilo, suas regras.', action: 'Entrar' },
-  recuperar: { eyebrow: 'RECUPERAR SENHA', title: 'Vamos recuperar seu acesso.', description: 'Informe o e-mail da sua conta.', headline: 'Um novo começo para sua jornada.', action: 'Solicitar recuperação' },
+
 };
 
-export function AccessPage({ mode }: { mode: AccessMode }) {
-  const [fields, setFields] = useState<AccessFields>({ name: '', email: '', phone: '', password: '', confirmation: '' });
+export function AccessPage({ mode }: { mode: Exclude<AccessMode, 'recuperar'> }) {
+  const [fields, setFields] = useState<AccessFields>({ name: '', email: '', phone: '', password: '', confirmation: '', nascimento: '' });
   const [errors, setErrors] = useState<AccessErrors>({});
   const [message, setMessage] = useState('');
   const form = useRef<HTMLFormElement>(null);
-  const [params] = useSearchParams();
-  const journey = params.get('jornada');
-  const suffix = journey === 'cabelo' || journey === 'maquiagem' ? `?jornada=${journey}` : '';
+  const { state, login } = useSession();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [sending, setSending] = useState(false);
+  const requested = typeof location.state?.from === 'string' ? location.state.from : '';
+  const next = /^\/(consultoria(\/|\?|$)|minha-conta(\?|$)|admin(\/|$))/.test(requested) ? requested : '';
   const text = copy[mode];
-  function submit(event: FormEvent<HTMLFormElement>) {
+  if (state.status === 'signed-in') return <Navigate replace to={next || (state.user.role === 'ADMIN' ? '/admin' : paths.conta)} />;
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = validateAccess(mode, fields);
     setErrors(nextErrors);
@@ -32,13 +39,30 @@ export function AccessPage({ mode }: { mode: AccessMode }) {
       (form.current?.elements.namedItem(first) as HTMLInputElement | null)?.focus();
       return;
     }
-    setMessage(mode === 'recuperar' ? 'A recuperação por e-mail ainda não está disponível. Nenhum e-mail foi enviado.' : mode === 'cadastro' ? 'O cadastro ainda não está disponível. Nenhuma conta foi criada.' : 'O acesso à conta ainda não está disponível. Você não foi autenticada.');
-    setFields(previous => ({ ...previous, password: '', confirmation: '' }));
+    if (sending) return;
+    setSending(true);
+    try {
+      if (mode === 'cadastro') {
+        await privateApi('/auth/cadastro', { method: 'POST', body: {
+          nome: fields.name.trim(), email: fields.email.trim(), telefone: fields.phone.trim() || null,
+          dataNascimento: fields.nascimento, senha: fields.password,
+        } });
+        navigate(paths.entrar, { replace: true, state: { from: next, registered: true } });
+      } else {
+        const user = await login(fields.email.trim(), fields.password);
+        navigate(next || (user.role === 'ADMIN' ? '/admin' : paths.conta), { replace: true });
+      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Não foi possível continuar.');
+    } finally {
+      setSending(false);
+    }
   }
   function field(name: keyof AccessFields, label: string, type: string, autoComplete: string, placeholder?: string) {
     return <div className="access-field">
       <label htmlFor={`access-${name}`}>{label}</label>
       <input id={`access-${name}`} name={name} type={type} autoComplete={autoComplete} placeholder={placeholder} value={fields[name]} required={name !== 'phone'} minLength={name === 'password' && mode === 'cadastro' ? 8 : undefined}
+        maxLength={name === 'password' || name === 'confirmation' ? 72 : name === 'phone' ? 20 : name === 'nascimento' ? undefined : 100}
         aria-invalid={Boolean(errors[name])} aria-describedby={errors[name] ? `error-${name}` : name === 'password' && mode === 'cadastro' ? 'password-hint' : undefined}
         onChange={event => { setFields(previous => ({ ...previous, [name]: event.target.value })); setErrors(previous => ({ ...previous, [name]: undefined })); setMessage(''); }} />
       {name === 'password' && mode === 'cadastro' && <small id="password-hint">Pelo menos 8 caracteres.</small>}
@@ -53,24 +77,25 @@ export function AccessPage({ mode }: { mode: AccessMode }) {
     <Link className="home-shortcut" to={paths.home} aria-label="Voltar ao início"><img src={homeIcon} alt="" /></Link>
     <section className="access-content" aria-labelledby="access-title">
       <p className="eyebrow">{text.eyebrow}</p><h1 id="access-title">{text.title}</h1><p>{text.description}</p>
-      <p className="notice">{mode === 'recuperar' ? 'Recuperação de senha' : mode === 'cadastro' ? 'Cadastro' : 'Login'} em preparação. Você pode conferir os campos, mas os dados não serão enviados nem salvos.</p>
-      {suffix && <p>Jornada selecionada: {journey}. A consultoria personalizada exige uma conta autenticada.</p>}
-      <form ref={form} onSubmit={submit} noValidate>
+      {location.state?.registered && <p className="notice" role="status">Conta criada. Entre para continuar.</p>}
+      <form ref={form} onSubmit={submit} noValidate aria-busy={sending}>
         {mode === 'cadastro' && field('name', 'Nome completo', 'text', 'name', 'Digite seu nome')}
         <div className={mode === 'cadastro' ? 'access-row' : undefined}>
           {field('email', 'E-mail', 'email', 'email', 'voce@exemplo.com')}
           {mode === 'cadastro' && field('phone', 'Telefone (opcional)', 'tel', 'tel', '(00) 00000-0000')}
         </div>
-        {mode !== 'recuperar' && <div className={mode === 'cadastro' ? 'access-row' : undefined}>
+        {mode === 'cadastro' && <div className={styles.birth}>{field('nascimento', 'Data de nascimento', 'date', 'bday')}</div>}
+        {<div className={mode === 'cadastro' ? 'access-row' : undefined}>
           {field('password', 'Senha', 'password', mode === 'cadastro' ? 'new-password' : 'current-password')}
           {mode === 'cadastro' && field('confirmation', 'Confirmar senha', 'password', 'new-password')}
         </div>}
-        {mode === 'cadastro' && <div className="terms-pending"><label><input type="checkbox" disabled /> Li e concordo com os Termos de uso e a Política de privacidade.</label><p>Documentos em preparação. O aceite será habilitado quando estiverem disponíveis para leitura.</p></div>}
-        {mode === 'login' && <Link to={`${paths.recuperarSenha}${suffix}`}>Esqueci minha senha</Link>}
-        <button className="action-link action-link--primary access-submit" type="submit">{text.action}</button>
+        <button className="action-link action-link--primary access-submit" type="submit" disabled={sending}>{sending ? 'Aguarde…' : text.action}</button>
         <p role="status" className="submission-status">{message}</p>
       </form>
-      <div className="access-links">{mode === 'cadastro' ? <p>Já tem conta? <Link to={`${paths.entrar}${suffix}`}>Entrar</Link></p> : <Link to={`${paths.cadastro}${suffix}`}>Criar conta</Link>}{mode === 'recuperar' && <Link to={`${paths.entrar}${suffix}`}>Voltar para entrar</Link>}{suffix && <Link to={`${paths.consultoria}${suffix}`}>Voltar à consultoria</Link>}</div>
+      <div className="access-links">
+        {mode === 'cadastro' ? <p>Já tem conta? <Link to={paths.entrar} state={{ from: next }}>Entrar</Link></p> :
+          <Link to={paths.cadastro} state={{ from: next }}>Criar conta</Link>}
+      </div>
     </section>
   </div>;
 }

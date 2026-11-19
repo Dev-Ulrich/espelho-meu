@@ -22,18 +22,11 @@ npm run preview
 
 `npm test` verifica validação de acesso e renderização das rotas/filtros via React no servidor; não substitui teste interativo em navegador. Não há script de lint configurado. O build gera `dist/`. Para Vercel, usar `front-end` como Root Directory; `vercel.json` contém o fallback das rotas da SPA.
 
-## Funcionalidades e integração
+## Fluxo autenticado
 
-| Área | Comportamento |
-| --- | --- |
-| Páginas públicas | Início, Sobre, Integrantes, detalhe de integrante, FAQ, Contato, Cabelo, Maquiagem e Catálogo. |
-| Java | `GET /produto` exibe os produtos capilares na seção Cabelo. O cadastro remoto de teste depende da configuração de demonstração no servidor. |
-| Consultoria | Questionários separados para cabelo e maquiagem. O Flask retorna a sugestão principal do modelo e alternativas com justificativas e cuidados. |
-| Fotos | Simulação opcional por sugestão. Disponível quando o Flask informa que o serviço de imagens está ativo. |
-| Histórico e favoritas | As sugestões salvas ficam no armazenamento do navegador e podem ser removidas em Minha conta. |
-| Conta | Cadastro com senha, login, recuperação e sincronização dependem da implementação de autenticação na API Java. |
+As entradas públicas são `/`, `/entrar` e `/cadastro`. A conta fica em `/minha-conta` e a consultoria capilar em `/consultoria/cabelo/:etapa`. O painel `/admin` exige a role `ADMIN` e oferece os cadastros de produtos, usuários e cortes. Maquiagem, edição de imagens e recuperação de senha ficam para etapas posteriores.
 
-Em desenvolvimento, execute `flask --app app run` na pasta `ia-chatbot` após instalar suas dependências. O Vite encaminha as rotas de IA ao Flask na porta 5000. Em produção, o build usa a URL `VITE_IA_BASE_URL` ou, por padrão, a API de IA do Render. O servidor aceita por padrão a origem `https://espelho-meu-two.vercel.app`. Para outro domínio ou um preview, configure a lista `ESPELHO_FRONT_ORIGINS` no Render.
+O front acessa o Java no mesmo domínio pela rota `/api/java`. O proxy do Vite aponta para `127.0.0.1:8080` e o da Vercel para o serviço Java. A sessão usa cookie HttpOnly, e as requisições de escrita incluem o token obtido em `GET /auth/csrf`. O Flask recebe as chamadas de consultoria somente pelo Java. A [configuração da API Java](../java/README.md) descreve a migração e as variáveis necessárias.
 
 ## Organização e revisão
 
@@ -62,18 +55,13 @@ O limite do plano Figma impediu a leitura de [catálogo](https://www.figma.com/d
 
 O ZIP `espelho-meu-frontend-v2.zip` da biblioteca ChatGPT não estava acessível nesta sessão nem anexado localmente. A versão exata **não foi incorporada**; o trabalho partiu do código local e dos frames disponíveis.
 
-## Conferência manual pendente
+## Conferência manual
 
-Revise a geometria, o foco e as interações em celular, tablet e desktop em **390, 768 e 1440 px**:
-
-1. Home: seguir todos os links do cabeçalho e os dois CTAs, depois voltar pelo histórico.
-2. Catálogo: abrir cada atalho; colorações deve mostrar sua pendência, nunca os cortes como se fossem colorações.
-3. Cabelo: combinar Lisa + Curto (estado vazio), limpar filtros, abrir Bob reto; fechar por botão e Escape, conferindo retorno do foco ao acionador. Testar histórico dos filtros.
-4. Maquiagem: selecionar Pele, Olhos e Lábios, abrir detalhes e chegar à consultoria com a jornada correta.
-5. Formulários: enviar vazio, e-mail inválido, senha curta e confirmação diferente; conferir mensagens e foco no primeiro campo inválido. Com campos válidos, confirmar aviso de indisponibilidade, senhas limpas e ausência de requisições/sessão.
-6. Conta: percorrer as cinco opções e conferir que nenhuma apresenta usuário ou dados fictícios.
-7. Consultoria: testar as jornadas de cabelo e maquiagem, conferir as alternativas, salvar uma sugestão, abrir Minha conta e verificar a permanência após recarregar. Se a simulação estiver ativa, usar somente uma foto autorizada.
-8. Verificar Tab/Shift+Tab, foco visível, Escape no diálogo, zoom 200%, textos sem cortes e ausência de scroll horizontal.
+1. Como visitante, abra diretamente a conta, a consultoria e o painel e confirme o redirecionamento para Entrar.
+2. Cadastre uma conta, entre, recarregue a página e confirme que ela continua autenticada.
+3. Preencha a consultoria capilar com e sem coloração e penteados, revise as respostas e gere o resultado. Para análise facial, use uma foto autorizada.
+4. Como usuário comum, tente abrir o painel. Como administrador, teste criar, listar, editar e excluir um registro em cada entidade usando dados fictícios.
+5. Confira o layout em 390, 768 e 1440 px e navegue usando Tab, Shift+Tab e Enter.
 
 ## Avaliação e entrega
 
