@@ -105,3 +105,19 @@
 .text-link { color: var(--purple); text-decoration: underline; text-underline-offset: 3px; }
 button.action-link { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
+
+.site-header { border-bottom: 1px solid var(--line); }
+.site-header__inner { max-width: 1440px; min-height: 108px; padding-inline: clamp(16px, 5vw, 72px); }
+.site-header__brand { flex-basis: 208px; }
+.site-header__brand::after { display: none; }
+.site-header__tagline { margin-right: auto; color: var(--purple); text-transform: uppercase; font: .75rem Lato, system-ui, sans-serif; }
+.site-header__actions .action-link { min-height: 52px; border-radius: 14px; }
+.site-header__actions .action-link--outline { border-color: var(--line); color: var(--petrol); }
+.site-footer--compact { border-top: 1px solid var(--line); padding: 1.75rem clamp(16px, 5vw, 72px); color: var(--petrol); font: .8125rem Lato, system-ui, sans-serif; }
+@media (max-width: 760px) {
+  .site-header__inner { min-height: 76px; }
+  .site-header__brand { flex-basis: 150px; }
+  .site-header__tagline { margin-right: 0; }
+  .site-header__actions { flex-wrap: wrap; }
+  .site-header__actions .action-link { min-height: 44px; padding-inline: .7rem; }
+}

@@ -89,3 +89,34 @@
 }
 @keyframes spin { to { transform: rotate(1turn); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+.journeys { width: min(100% - clamp(32px, 10vw, 144px), 1120px); display: grid; gap: 1.5rem; }
+.journeys h1 { margin: 0; font-size: clamp(2.75rem, 5vw, 4rem); }
+.journeyGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; align-items: start; }
+.journeyCard { display: grid; gap: 1rem; border: 1px solid var(--line); border-radius: 24px; background: var(--paper); padding: clamp(16px, 2vw, 24px); }
+.journeyCard img { width: 100%; aspect-ratio: 1.9; object-fit: cover; object-position: center 40%; border-radius: 20px; }
+.journeyCard h2 { color: var(--petrol); font: 600 clamp(2rem, 4vw, 2.75rem)/1.1 var(--heading-font); }
+:global([data-reduced-motion]) .spinner { animation: none; }
+@media (max-width: 650px) { .journeyGrid { grid-template-columns: minmax(0, 1fr); } }
+
+.photo, .guide { padding: 1rem; border: 1px solid var(--line); border-radius: 14px; background: var(--ivory); }
+.photo strong { color: var(--petrol); font: 600 1.65rem/1.1 var(--heading-font); }
+.guide summary { color: var(--purple); cursor: pointer; }
+.guide p, .guide ol { margin-top: .75rem; }
+.guide ol { list-style: decimal; padding-inline-start: 1.5rem; }
+.results { display: grid; gap: 1.25rem; }
+.results header > p:first-child { margin-bottom: .75rem; }
+.resultLead, .resultCard { padding: clamp(16px, 2.5vw, 24px); }
+.resultLead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: clamp(16px, 3vw, 32px); align-items: start; border-radius: 24px; background: #ede6f4; }
+.resultLead img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 16px; }
+.resultLead > div, .resultCard, .productGroups, .productGroups ul { display: grid; gap: .75rem; }
+.resultLead small { color: var(--purple); }
+.results h2 { color: var(--petrol); font: 600 clamp(1.65rem, 3vw, 2rem)/1.1 var(--heading-font); }
+.resultLead h2 { font-size: clamp(2rem, 4vw, 2.75rem); }
+.resultCard { border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.resultCard h3 { color: var(--petrol); font-weight: 700; }
+.resultCard li { list-style: none; }
+.resultCard :global(.action-link) { justify-self: start; }
+.productGroups ul { margin-top: .5rem; }
+.productGroups li { padding-top: .65rem; border-top: 1px solid var(--line); }
+@media (max-width: 550px) { .resultLead { grid-template-columns: minmax(0, 1fr); } .resultLead img { aspect-ratio: 4 / 3; } }

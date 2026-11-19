@@ -4,9 +4,12 @@ import { paths } from '../../../app/paths';
 import logo from '../../../assets/figma/home-FotoFooterLogo.png';
 import './footer.css';
 
-export function SiteFooter() {
+export function SiteFooter({ compact = false }: { compact?: boolean }) {
   const { state } = useSession();
   const signedIn = state.status === 'signed-in';
+  if (compact && !signedIn) return <footer className="site-footer--compact">
+    <p>Espelho Meu · © 2026 · Cuidado, beleza e tecnologia em um só lugar.</p>
+  </footer>;
   return (
     <footer className="site-footer">
       <div className="site-footer__columns">

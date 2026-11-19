@@ -34,7 +34,7 @@ export function App() {
         <Route path="/admin/:entidade?" element={<AdminPage />} />
       </Route>
     </Route>
-    <Route element={<SiteLayout withHeader={false} />}>
+    <Route element={<SiteLayout access />}>
       <Route path={paths.entrar} element={<AccessPage key="login" mode="login" />} />
       <Route path={paths.cadastro} element={<AccessPage key="cadastro" mode="cadastro" />} />
     </Route>
