@@ -4,6 +4,9 @@ import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-r
 import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
 import { PrivateApiError, privateApi } from '../../services/api/privateApi';
 import { GuidedResults, type ConsultationResult } from './GuidedResults';
+import { useLibrary } from '../conta/LibraryProvider';
+import { upsertConsultation } from '../conta/library';
+import { useToast } from '../../components/ui/Feedback';
 import { editorialPhotos as photos } from '../home/editorialContent';
 import { hairVisual, type HairVisual } from './hairReferences';
 import styles from '../authenticated/workspace.module.css';
@@ -40,12 +43,14 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const { etapa } = useParams();
   const navigate = useNavigate();
   const [search] = useSearchParams();
+  const resultId = etapa === 'resultado' ? search.get('consulta') : null;
+  const { update } = useLibrary();
+  const toast = useToast();
   const editing = search.get('editar') === '1';
   const heading = useRef<HTMLHeadingElement>(null);
   const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
-  const [result, setResult] = useState<ConsultationResult>();
   const pendingResult = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -53,6 +58,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const [sending, setSending] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (resultId) return;
     const controller = new AbortController();
     loadQuestionnaire(area, controller.signal, () => setRetrying(true))
       .then(data => { if (!controller.signal.aborted) {
@@ -67,7 +73,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
       } })
       .catch(cause => { if (!controller.signal.aborted) { setError(cause.message); setLoading(false); } });
     return () => controller.abort();
-  }, [area, attempt]);
+  }, [area, attempt, resultId]);
 
   useEffect(() => () => pendingResult.current?.abort(), []);
 
@@ -95,23 +101,23 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     heading.current?.focus();
   }, [etapa, question?.id, sending]);
 
+  if (resultId) return <ConsultationResultView key={resultId} id={resultId} area={area} />;
   if (index < 0) return <Navigate to={base + '/perfil'} replace />;
   if (firstMissing && (index > stepFor(firstMissing) ||
     (!editing && question && position > ordered.indexOf(firstMissing)))) {
     return <Navigate to={questionUrl(firstMissing)} replace />;
   }
-  if (questions.length && index === 4 && !result) return <Navigate to={base + '/revisao'} replace />;
+  if (questions.length && index === 4) return <Navigate to={base + '/revisao'} replace />;
 
   function updateAnswer(id: string, value: Answer) {
     setAnswers(previous => ({ ...previous, [id]: value }));
     if (id === 'formato_manual' && value !== 'foto') setPhoto(undefined);
-    setResult(undefined);
     setError('');
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (sending) return;
+    if (pendingResult.current) return;
     setError('');
     if (question && incomplete(question)) {
       setError(question.id === 'formato_manual' && needsPhoto ? 'Selecione uma foto ou escolha o formato manualmente.' : 'Selecione uma opção para continuar.');
@@ -133,9 +139,21 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     try {
       const recommendations = await privateApi<ConsultationResult>(base, { method: 'POST', body: payload, signal: request.signal });
       if (request.signal.aborted) return;
-      if (!recommendations[area]) throw new Error('A consultoria retornou um resultado incompleto.');
-      setResult(recommendations);
-      navigate(base + '/resultado');
+      const id = recommendations.consulta_id;
+      if (!recommendations[area] || !id) throw new Error('A consultoria retornou um resultado incompleto.');
+      try {
+        update(value => ({
+          ...value,
+          records: upsertConsultation(value.records, {
+            id, area, title: recommendations.cabelo?.cortes[0]?.nome
+              ?? recommendations.maquiagem?.recomendacao ?? 'Consultoria capilar',
+            date: new Date().toISOString(), favorite: false, result: recommendations, answers,
+          }),
+        }));
+      } catch {
+        toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
+      }
+      navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
     } catch (cause) {
       if (request.signal.aborted) return;
       const unavailable = cause instanceof PrivateApiError && [502, 503, 504].includes(cause.status);
@@ -167,7 +185,6 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     </div> : questions.length === 0 ?
       <div className={styles.panel}><p role="alert">{error || 'Questionário indisponível.'}</p>
         <button className="action-link action-link--outline" onClick={() => { setLoading(true); setRetrying(false); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
-      : index === 4 && result ? <GuidedResults result={result} area={area} />
       : index === 3 ? <form className={guided.review} onSubmit={submit}>
         <p className={guided.eyebrow}>Revisão · Antes de enviar</p>
         <h1 ref={heading} tabIndex={-1} className={styles.title}>Confira suas escolhas</h1>
@@ -239,7 +256,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
           {question?.id === 'formato_manual' && needsPhoto && <div className={`${styles.field} ${guided.photo}`}>
             <strong>Uma foto pode ajudar</strong>
             <small>De frente, sem filtros e com boa luz. Afaste o cabelo do rosto e evite acessórios que escondam as laterais. Você também pode escolher o formato manualmente.</small>
-            <PhotoPicker photo={photo} onChange={file => { setPhoto(file); setResult(undefined); setError(''); }} />
+            <PhotoPicker photo={photo} onChange={file => { setPhoto(file); setError(''); }} />
             <small>A foto será enviada para estimar o formato facial quando você confirmar a revisão.</small>
           </div>}
           {error && <p className={styles.error} role="alert">{error}</p>}
@@ -250,5 +267,28 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
           </div>
         </form>
       </>}
+  </section>;
+}
+
+function ConsultationResultView({ area, id }: { area: ConsultationArea; id: string }) {
+  const [result, setResult] = useState<ConsultationResult>();
+  const [error, setError] = useState('');
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    privateApi<ConsultationResult>(`/consultoria/${area}/resultados/${encodeURIComponent(id)}`, { signal: controller.signal })
+      .then(value => { if (!controller.signal.aborted) setResult(value); })
+      .catch(cause => {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar a consulta.');
+      });
+    return () => controller.abort();
+  }, [area, id, attempt]);
+
+  return <section className={`${styles.page} ${guided.page}`}>
+    {result ? <GuidedResults result={result} area={area} /> : error ? <div className={styles.panel}>
+      <p role="alert">{error}</p>
+      <button type="button" className="action-link action-link--outline"
+        onClick={() => { setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button>
+    </div> : <p role="status">Carregando seu resultado…</p>}
   </section>;
 }

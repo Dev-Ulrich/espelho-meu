@@ -1,8 +1,11 @@
 """Verifica os modelos pré-treinados e o contrato da API, sem abrir porta."""
 import json
+from base64 import b64encode
 from io import BytesIO
 from itertools import product
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import requests
 
 from PIL import Image
 
@@ -65,8 +68,8 @@ def main():
             assert analise.status_code == 200, analise.get_json()
             assert area in analise.get_json()
             print(f"Consultoria privada de {area}: acesso público bloqueado e análise autenticada aprovada.")
-        assert client.get("/api/privado/simulacoes/status").status_code == 403
-        assert client.get("/api/privado/simulacoes/status", headers=headers).status_code == 200
+        assert client.get("/api/privado/edicoes-consulta/status").status_code == 403
+        assert client.get("/api/privado/edicoes-consulta/status", headers=headers).status_code == 200
 
     verificar_simulacao(chave)
     verificar_foto(chave)
@@ -95,26 +98,52 @@ def verificar_foto(chave):
 
 
 def verificar_simulacao(chave):
-    codigo = "codigo-de-teste-local"
-    with patch.dict("os.environ", {"ESPELHO_IA_INTERNAL_KEY": chave,
-                                  "OPENAI_API_KEY": "credencial-ficticia", "SIMULACAO_CODIGO": codigo}):
+    with patch.dict("os.environ", {"ESPELHO_IA_INTERNAL_KEY": chave, "OPENAI_API_KEY": "credencial-ficticia",
+                                  "SIMULACAO_CODIGO": "", "ESPELHO_DEMO_LOCAL": "0",
+                                  "OPENAI_IMAGE_MODEL": "gpt-image-2.6-sunburst"}):
         app = create_app()
-    with app.test_client() as client:
-        headers = {"X-Espelho-Internal-Key": chave}
-        assert client.get("/api/privado/simulacoes/status", headers=headers).get_json()["disponivel"]
-        rota = "/api/privado/simulacoes/maquiagem"
-        assert client.post(rota, headers=headers).status_code == 403
-        foto = BytesIO()
-        Image.new("RGB", (16, 16)).save(foto, format="JPEG")
-        resultado = foto.getvalue()
-        foto.seek(0)
-        with patch("app.editar_foto", return_value=resultado) as editar:
-            resposta = client.post(rota, headers={**headers, "X-Simulacao-Codigo": codigo},
-                                    data={"estilo": "maquiagem natural", "foto": (foto, "teste.jpg")})
-            editar.assert_called_once()
-        assert resposta.status_code == 200 and resposta.mimetype == "image/jpeg"
-        assert resposta.data == resultado
-        print("Simulação protegida: código conferido e JPEG validado com provedor simulado.")
+
+    origem = BytesIO()
+    Image.new("RGB", (640, 960)).save(origem, format="PNG")
+    entrada = origem.getvalue()
+    resultado = BytesIO()
+    Image.new("RGB", (16, 16)).save(resultado, format="JPEG")
+    jpeg = resultado.getvalue()
+    provedor = Mock()
+    provedor.json.return_value = {"data": [{"b64_json": b64encode(jpeg).decode()}]}
+    headers = {"X-Espelho-Internal-Key": chave}
+
+    def enviar(client, area, estilo, chave_headers=headers, foto=entrada):
+        return client.post(f"/api/privado/edicoes-consulta/{area}", headers=chave_headers,
+                           data={"estilo": estilo, "foto": (BytesIO(foto), "teste.png")})
+
+    with app.test_client() as client, patch("simulacao.requests.post", return_value=provedor) as editar:
+        assert client.get("/api/privado/edicoes-consulta/status", headers=headers).get_json()["disponivel"]
+        assert enviar(client, "cabelo", "Coque", {}).status_code == 403
+        assert client.post("/api/simulacoes/cabelo").status_code == 404
+        invalida = enviar(client, "cabelo", "Coque", foto=b"invalida")
+        assert invalida.status_code == 422 and invalida.headers["X-Espelho-Edit-Status"] == "not-processed"
+        editar.assert_not_called()
+
+        assert enviar(client, "cabelo", "Coque com textura").data == jpeg
+        assert enviar(client, "maquiagem", "Acabamento luminoso").data == jpeg
+        cabelo, maquiagem = editar.call_args_list
+        assert cabelo.args == ("https://api.openai.com/v1/images/edits",)
+        instrucoes = cabelo.kwargs["data"]
+        assert instrucoes["model"] == "gpt-image-2.6-sunburst"
+        assert (instrucoes["size"], instrucoes["quality"], instrucoes["output_format"], instrucoes["n"]) == (
+            "1024x1536", "low", "jpeg", 1)
+        assert "cor original do cabelo" in instrucoes["prompt"]
+        assert "tom natural da pele" in maquiagem.kwargs["data"]["prompt"]
+        assert cabelo.kwargs["files"]["image[]"] == maquiagem.kwargs["files"]["image[]"]
+
+        editar.side_effect = requests.ReadTimeout()
+        incerta = enviar(client, "cabelo", "Coque")
+        assert incerta.status_code == 504 and "X-Espelho-Edit-Status" not in incerta.headers
+        editar.side_effect = requests.ConnectTimeout()
+        recusada = enviar(client, "maquiagem", "Luminoso")
+        assert recusada.status_code == 503 and recusada.headers["X-Espelho-Edit-Status"] == "not-processed"
+    print("Simulação privada verificada com provedor de imagens simulado.")
 
 
 def preencher(respostas, pergunta):
