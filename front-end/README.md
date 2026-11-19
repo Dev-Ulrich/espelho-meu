@@ -89,7 +89,7 @@ Conferência dos itens “Páginas e responsividade” e “Componentização e 
 | --- | --- |
 | Home | `/`: apresentação, como funciona, benefícios, dúvidas expansíveis e chamada para login |
 | Sobre | `/sobre`: pública |
-| Integrantes | `/integrantes`: pública; conteúdo da equipe ainda resumido |
+| Integrantes | `/integrantes`: pública, com fotos, nomes, RMs, turma, funções e perfis profissionais |
 | FAQ | `/faq`: pública, perguntas expansíveis e orientações de foto |
 | Contato | `/contato`: pública, link para issues do projeto; não há formulário de envio |
 | Pelo menos duas páginas da solução | Jornadas distintas em `/consultoria/cabelo/:etapa` e `/consultoria/maquiagem/:etapa`; exigem sessão |
@@ -100,7 +100,6 @@ Referências de organização consultadas: [Prepila Dyson](https://github.com/De
 
 Pendências identificadas para próximas etapas:
 
-- Completar a página Integrantes e o README com nomes completos, RMs, turma, fotos e links de GitHub/LinkedIn. Os repositórios anteriores contêm referências desses dados; conferir a composição atual do grupo antes da importação.
 - Acrescentar capturas reais e atualizadas do Espelho Meu ao README.
 - Publicar e registrar o vídeo do projeto no YouTube; os links de GitHub, Vercel, API e contato já estão na tabela de entrega acima, mas sua operação remota não foi revalidada nesta etapa.
 - Validar visualmente a landing e os fluxos em navegador. Não havia navegador conectado para essa conferência nesta sessão.
@@ -109,3 +108,15 @@ Pendências identificadas para próximas etapas:
 Validação desta etapa: `npm test` e `npm run build` (inclui TypeScript). A cobertura de rotas verifica conteúdo institucional público, links da home para login e preservação da proteção das áreas internas.
 
 Apoio de IA nesta etapa: Codex para leitura dos requisitos e referências, ajuste da navegação/landing, FAQ expansível e atualização dos testes de renderização. Pedido de referência: “landingpage inicial pública ... redirecionada para o login”. A revisão humana do grupo, os registros completos de prompts e a demonstração da integração continuam sob responsabilidade da equipe.
+
+## Equipe
+
+Dados e funções fornecidos pelo grupo; fotos importadas do [repositório indicado](https://github.com/Dev-Ulrich/PrepilaDysonFrontEndRepository/tree/main/assets/images/avatares) e servidas localmente.
+
+| Foto | Integrante | RM | Turma | Função | Perfis |
+| --- | --- | --- | --- | --- | --- |
+| <img src="src/assets/team/Victor-Ulrich.png" alt="Foto de Victor Ulrich Costa Alves da Silva" width="80" /> | Victor Ulrich Costa Alves da Silva | 568634 | 1TDSPW | Desenvolvimento (Front-end e Chatbot), banco de dados e documentação. | [GitHub](https://github.com/Dev-Ulrich) · [LinkedIn](https://www.linkedin.com/in/victorulrichcosta/) |
+| <img src="src/assets/team/Matheus-Pereira.jpeg" alt="Foto de Matheus Pereira da Silva Franco" width="80" /> | Matheus Pereira da Silva Franco | 569315 | 1TDSPW | Desenvolvimento (Java e Front-end), banco de dados e documentação. | [GitHub](https://github.com/MatheusPSFranco) · [LinkedIn](https://www.linkedin.com/in/matheus-pereira-da-silva-franco-b7a7b03b7/) |
+| <img src="src/assets/team/Matheus-Luca.png" alt="Foto de Matheus Luca Fouad Barragão" width="80" /> | Matheus Luca Fouad Barragão | 572228 | 1TDSPW | Desenvolvimento (Python e Front-end) e documentação. | [GitHub](https://github.com/MatheusLuca) · [LinkedIn](https://www.linkedin.com/in/matheusbarragao/) |
+| <img src="src/assets/team/Arthur-da-Silva.jpg" alt="Foto de Arthur da Silva Santana" width="80" /> | Arthur da Silva Santana | 571075 | 1TDSPW | Desenvolvimento (Front-end), edição e roteirização. | [GitHub](https://github.com/arthursantana1521) · [LinkedIn](https://www.linkedin.com/in/arthur-da-silva-santana-a6061a310) |
+| <img src="src/assets/team/Yasmin-Capi.jpeg" alt="Foto de Yasmin Capi" width="80" /> | Yasmin Capi | 571926 | 1TDSPW | Desenvolvimento (Front-end), prototipação, edição e roteirização. | [GitHub](https://github.com/yasmincappi) · [LinkedIn](https://www.linkedin.com/in/yasmincappi/) |

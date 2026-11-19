@@ -26,7 +26,7 @@ export function AreaEditorialPage({ area }: { area: EditorialArea }) {
         </li>)}
       </ul>
     </section>
-    <section className="editorial-invite">
+    <section className="editorial-invite editorial-invite--rose">
       <div className="editorial-container">
         <h2>Experimente no seu estilo.</h2>
         <p>Entre para responder à consultoria e testar uma sugestão na sua foto.</p>

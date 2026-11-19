@@ -21,4 +21,12 @@
 }
 
 .institutional-team li { border-top: 3px solid #b294bd; }
-.institutional-team a { color: #392747; font-family: var(--heading-font); font-size: 1.55rem; }
+.institutional-team h2 a { color: #392747; font-family: var(--heading-font); font-size: 1.55rem; }
+
+.institutional-team li { display: flex; flex-direction: column; gap: 1rem; min-width: 0; border-top-color: #B98272; }
+.institutional-team h2 { margin: 0; }
+.member-photo { width: 100%; aspect-ratio: 1; height: auto; object-fit: cover; object-position: center; border-radius: 8px; }
+.member-photo--detail { max-width: 240px; margin-bottom: 24px; }
+.member-info { display: grid; gap: .75rem; font: 1rem/1.6 Lato, system-ui, sans-serif; }
+.member-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+.member-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--purple); text-decoration: underline; text-underline-offset: 4px; font: 700 1rem/1.5 Lato, system-ui, sans-serif; }

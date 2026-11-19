@@ -8,12 +8,18 @@ import '../ajuda/help.css';
 import './institutional.css';
 
 const project = 'https://github.com/Dev-Ulrich/espelho-meu';
+import photo0 from '../../assets/team/Victor-Ulrich.png';
+import photo1 from '../../assets/team/Matheus-Pereira.jpeg';
+import photo2 from '../../assets/team/Matheus-Luca.png';
+import photo3 from '../../assets/team/Arthur-da-Silva.jpg';
+import photo4 from '../../assets/team/Yasmin-Capi.jpeg';
+
 const team = [
-  { id: 'victor', name: 'Victor Ulrich', contribution: 'Coordenação técnica e integração do front-end.' },
-  { id: 'matheus-p', name: 'Matheus P.', contribution: 'API Java e integração HTTP do front-end.' },
-  { id: 'matheus-l', name: 'Matheus L.', contribution: 'Aplicação Python, seleção de foto e vitrine de demonstração.' },
-  { id: 'arthur', name: 'Arthur', contribution: 'Central de ajuda e explicação da jornada na homepage.' },
-  { id: 'yasmin', name: 'Yasmin', contribution: 'Benefícios, chamada para a consultoria e rodapé.' },
+  {"id": "victor", "name": "Victor Ulrich Costa Alves da Silva", "rm": "568634", "className": "1TDSPW", "contribution": "Desenvolvimento (Front-end e Chatbot), banco de dados e documentação.", "github": "https://github.com/Dev-Ulrich", "linkedin": "https://www.linkedin.com/in/victorulrichcosta/", "photo": photo0},
+  {"id": "matheus-p", "name": "Matheus Pereira da Silva Franco", "rm": "569315", "className": "1TDSPW", "contribution": "Desenvolvimento (Java e Front-end), banco de dados e documentação.", "github": "https://github.com/MatheusPSFranco", "linkedin": "https://www.linkedin.com/in/matheus-pereira-da-silva-franco-b7a7b03b7/", "photo": photo1},
+  {"id": "matheus-l", "name": "Matheus Luca Fouad Barragão", "rm": "572228", "className": "1TDSPW", "contribution": "Desenvolvimento (Python e Front-end) e documentação.", "github": "https://github.com/MatheusLuca", "linkedin": "https://www.linkedin.com/in/matheusbarragao/", "photo": photo2},
+  {"id": "arthur", "name": "Arthur da Silva Santana", "rm": "571075", "className": "1TDSPW", "contribution": "Desenvolvimento (Front-end), edição e roteirização.", "github": "https://github.com/arthursantana1521", "linkedin": "https://www.linkedin.com/in/arthur-da-silva-santana-a6061a310", "photo": photo3},
+  {"id": "yasmin", "name": "Yasmin Capi", "rm": "571926", "className": "1TDSPW", "contribution": "Desenvolvimento (Front-end), prototipação, edição e roteirização.", "github": "https://github.com/yasmincappi", "linkedin": "https://www.linkedin.com/in/yasmincappi/", "photo": photo4}
 ];
 
 export function AboutPage() {
@@ -37,7 +43,7 @@ export function AboutPage() {
       </div>
       <img src={editorialPhotos.waves} alt="Retrato com cabelo ondulado, franja e camadas" loading="lazy" />
     </section>
-    <section className="editorial-invite">
+    <section className="editorial-invite editorial-invite--rose">
       <div className="editorial-container">
         <h2>Um projeto da FIAP</h2>
         <p>O Espelho Meu foi desenvolvido pela turma 1TDSPW de ADS para a Global Solution 2026/2, com o tema CitizenTech.</p>
@@ -48,14 +54,26 @@ export function AboutPage() {
   </div>;
 }
 
+function MemberInfo({ member }: { member: typeof team[number] }) {
+  return <div className="member-info">
+    <p><strong>RM:</strong> {member.rm} · <strong>Turma:</strong> {member.className}</p>
+    <p>{member.contribution}</p>
+    <div className="member-links">
+      <a href={member.github} aria-label={`GitHub de ${member.name}`} target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href={member.linkedin} aria-label={`LinkedIn de ${member.name}`} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </div>
+  </div>;
+}
+
 export function TeamPage() {
   return <section className="help-page institutional-page" aria-labelledby="team-title">
     <h1 id="team-title">Integrantes</h1>
     <p>Equipe do Espelho Meu na Global Solution da FIAP.</p>
     <ul className="institutional-team">
       {team.map(member => <li key={member.id}>
-        <Link className="text-link" to={`${paths.integrantes}/${member.id}`}>{member.name}</Link>
-        <p>{member.contribution}</p>
+        <img className="member-photo" src={member.photo} alt={`Foto de ${member.name}`} width={240} height={240} loading="lazy" />
+        <h2><Link className="text-link" to={`${paths.integrantes}/${member.id}`}>{member.name}</Link></h2>
+        <MemberInfo member={member} />
       </li>)}
     </ul>
   </section>;
@@ -66,8 +84,9 @@ export function MemberPage() {
   const member = team.find(person => person.id === id);
   if (!member) return <StarterPage title="Integrante não encontrado" />;
   return <section className="help-page institutional-page" aria-labelledby="member-title">
+    <img className="member-photo member-photo--detail" src={member.photo} alt={`Foto de ${member.name}`} width={240} height={240} />
     <h1 id="member-title">{member.name}</h1>
-    <p>{member.contribution}</p>
+    <MemberInfo member={member} />
     <ActionLink to={paths.integrantes} variant="outline">Ver todos os integrantes</ActionLink>
   </section>;
 }

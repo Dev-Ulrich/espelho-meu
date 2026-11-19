@@ -105,3 +105,7 @@
   .editorial-gallery img { aspect-ratio: 1.08; }
 }
 .editorial-hero__copy > .action-link, .editorial-invite .editorial-container > .action-link { justify-self: start; }
+
+.editorial-invite--rose { background: #B98272; color: #2d2035; }
+.editorial-invite--rose h2 { color: #2d2035; }
+.editorial-page .editorial-invite--rose a:focus-visible { outline-color: #2d2035; }
