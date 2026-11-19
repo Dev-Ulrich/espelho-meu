@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espelho Meu · Teste de IA</title>
+  <link rel="stylesheet" href="/demo-assets/demo.css">
+  <script src="/demo-assets/guias.js" defer></script>
+  <script src="/demo-assets/demo.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="brand">Espelho Meu</p>
+    <h1>Teste de consultoria</h1>
+    <p>Responda uma pergunta por vez para descobrir cortes, cores e maquiagens compatíveis com suas preferências.</p>
+  </header>
+
+  <form id="consulta">
+    <div class="layout">
+      <section class="panel camera" aria-labelledby="foto-titulo">
+        <h2 id="foto-titulo">Sua foto</h2>
+        <p>Use boa luz e deixe testa, bochechas e mandíbula visíveis.</p>
+        <div id="quadro" class="quadro">
+          <span id="sem-foto">A foto vai aparecer aqui</span>
+          <video id="video" autoplay playsinline muted hidden></video>
+          <img id="previa" alt="Foto selecionada" hidden>
+          <svg id="contorno" aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="none" hidden>
+            <polygon fill="none" stroke="#ffdf86" stroke-width="3" vector-effect="non-scaling-stroke"></polygon>
+          </svg>
+        </div>
+        <div class="acoes">
+          <button type="button" id="camera" class="secundario">Ativar câmera</button>
+          <button type="button" id="capturar" hidden disabled>Tirar foto</button>
+          <button type="button" id="fechar" class="secundario" hidden>Fechar câmera</button>
+          <button type="button" id="remover" class="secundario" hidden>Remover foto</button>
+        </div>
+        <label for="arquivo">Ou selecione uma foto</label>
+        <input id="arquivo" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="nota">JPG, PNG ou WebP de até 5 MB. A demo analisa a foto neste computador e não a salva no histórico. Ao pedir uma simulação, a foto é enviada à OpenAI.</p>
+        <p id="estado-foto" role="status"></p>
+      </section>
+
+      <div class="perguntas panel">
+        <script id="questionario" type="application/json">{{ questionario | tojson }}</script>
+        <p class="nota" id="progresso" aria-live="polite"></p>
+        <fieldset>
+          <legend>
+            <span id="pergunta-titulo" tabindex="-1"></span>
+            <span id="ajuda-grupo" class="ajuda-grupo" hidden>
+              <button type="button" id="abrir-ajuda" aria-label="Ajuda sobre esta pergunta" aria-describedby="pergunta-ajuda">?</button>
+              <span id="pergunta-ajuda" class="ajuda-conteudo" role="tooltip"></span>
+            </span>
+          </legend>
+          <p id="pergunta-revisao" class="nota" hidden>Gere as recomendações ou volte para revisar suas escolhas.</p>
+          <div id="guia-pergunta" class="guia-pergunta" hidden>
+            <strong>Como descobrir seu subtom</strong>
+            <ol id="passos-pergunta"></ol>
+            <p class="nota" id="nota-guia-pergunta"></p>
+          </div>
+          <div id="alternativas"></div>
+        </fieldset>
+        <div class="acoes">
+          <button id="voltar" type="button" class="secundario" hidden>Voltar</button>
+          <button id="avancar" type="submit">Continuar</button>
+          <button id="enviar" type="submit" hidden>Gerar recomendações</button>
+        </div>
+        <button id="exemplo" type="button" class="secundario">Preencher exemplo</button>
+        <p id="estado" role="status"></p>
+      </div>
+    </div>
+  </form>
+
+  <section id="resultado" hidden aria-labelledby="resultado-titulo">
+    <h2 id="resultado-titulo" tabindex="-1">Suas recomendações</h2>
+    <div class="resultados">
+      <article class="panel" id="painel-facial">
+        <h3>Formato facial</h3>
+        <p class="destaque" id="formato"></p>
+        <p class="nota" id="formato-origem"></p>
+        <ul id="avisos" hidden></ul>
+        <details id="medidas-detalhe" hidden><summary>Ver medidas aproximadas</summary><dl id="medidas"></dl></details>
+      </article>
+      <article class="panel" id="painel-cabelo">
+        <h3>Cabelo</h3>
+        <p class="destaque" id="corte"></p>
+        <dl id="dicas-cabelo"></dl>
+        <div id="produtos-cabelo"></div>
+      </article>
+      <article class="panel" id="painel-make">
+        <h3>Maquiagem</h3>
+        <p class="destaque" id="make"></p>
+        <dl id="dicas-make"></dl>
+        <div id="produtos-make"></div>
+      </article>
+    </div>
+    <section id="catalogo" class="panel catalogo" aria-labelledby="cortes-titulo">
+      <h3 id="cortes-titulo">Cortes recomendados</h3>
+      <p>Compare como pedir cada corte e a manutenção estimada.</p>
+      <p id="cortes-vazio" hidden>Revise uma preferência no questionário para ampliar a busca.</p>
+      <ol id="cortes" class="lista-cortes"></ol>
+    </section>
+    <section id="simulacao" class="panel simulacao" aria-labelledby="simulacao-titulo">
+      <h3 id="simulacao-titulo">Simulação na foto com OpenAI</h3>
+      <p id="sim-aviso" role="status"></p>
+      <div id="sim-controles" hidden>
+        <p>A simulação envia a foto à OpenAI e pode gerar cobrança por uso.</p>
+        <label for="codigo">Código de demonstração</label>
+        <input id="codigo" type="password" autocomplete="off">
+        <div class="referencias-simulacao">
+          <div id="sim-cabelo">
+            <div id="referencia-corte"></div>
+            <p id="corte-selecionado" role="status"></p>
+            <p id="penteado-selecionado"></p>
+            <button type="button" data-area="cabelo">Simular corte selecionado</button>
+          </div>
+          <div id="sim-make">
+            <div id="referencia-make"></div>
+            <button type="button" data-area="maquiagem">Simular maquiagem</button>
+          </div>
+        </div>
+      </div>
+      <div class="comparacao" id="comparacao" hidden>
+        <figure><img id="antes" alt="Foto original"><figcaption>Antes</figcaption></figure>
+        <figure><img id="depois" alt="Foto com a simulação"><figcaption>Depois</figcaption></figure>
+      </div>
+    </section>
+  </section>
+</main>
+</body>
+</html>

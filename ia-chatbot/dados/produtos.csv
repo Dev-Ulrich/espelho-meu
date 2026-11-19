@@ -1,0 +1,33 @@
+categoria,nome,formato,texturas,acabamentos,coberturas,cor,selos,preco,url
+cabelo,Lola Cosmetics Argan Oil 50 mL,oleo,liso;ondulado,,,,,,https://www.lolacosmetics.com.br/tratamentos/finalizacao/oleo
+cabelo,Salon Line Mousse Definidor Definição Natural,mousse,ondulado;cacheado,,,,,,https://universo.salonline.com.br/guia-completo-para-onduladas/
+cabelo,Salon Line Creme para Pentear Definição Natural 1 kg,creme,ondulado;cacheado,,,,,42.00,https://www.salonline.com.br/produtos
+cabelo,Salon Line Creme para Pentear Definição Máxima 1 kg,creme,cacheado;crespo,,,,,42.00,https://www.salonline.com.br/cremeparapentear-definicao
+cabelo,Salon Line Creme para Pentear Nutrição Reparadora 1 kg,creme,ondulado;cacheado;crespo,,,,vegano;cruelty_free,42.00,https://www.salonline.com.br/creme-para-pentear-nutricao-reparadora-salon-line-1kg
+cabelo,Salon Line Gelatina #todecacho Super Definição 1 kg,gelatina,ondulado;cacheado;crespo,,,,,46.20,https://www.salonline.com.br/produtos
+base,Vult Base Líquida HD Alta Cobertura,liquido,,matte,alta,,,35.90,https://www.vult.com.br/corretivo-base
+base,"Quem Disse, Berenice? Base Líquida Tô No Glow",liquido,,luminoso,media,,,74.90,https://www.quemdisseberenice.com.br/produto/base-liquida-to-no-glow-220o-30ml/
+base,Make B. Base Líquida Hyaluronic,liquido,,natural,media,,,132.90,https://www.boticario.com.br/produto/base-liquida-protetora-fps-70-make-b-hyaluronic-cor-210q-30ml
+base,Océane Edition Foundation Stick,bastao,,semimatte,media,,vegano;cruelty_free,99.90,https://www.oceane.com.br/base-em-bastao-escura-semimatte-foundation-stick-honey-oceane-edition-8g-ap2001278co060f/p
+base,MAC Studio Fix Powder Plus,compacto,,matte,media;alta,,,299.00,https://www.maccosmetics.com.br/product/13847/133680/produtos/maquiagem/rosto/base/base-em-po-studio-fix-powder-plus
+corretivo,Vult Corretivo Líquido HD,liquido,,,alta,,,24.90,https://www.vult.com.br/produto/corretivo-liquido-vult-hd-m106-8ml
+corretivo,Océane Edition Concealer Stick,bastao,,semimatte,media,,vegano,59.90,https://www.oceane.com.br/corretivo-em-bastao-escuro-4-1-ap2001424co146f/p
+po,Vult Pó Compacto Basic,compacto,,matte,,colorido,,34.90,https://www.vult.com.br/pos-basic
+po,"Quem Disse, Berenice? Pó Solto Translúcido Tô No Glow",solto,,,,translucido,,89.90,https://www.boticario.com.br/maquiagem?acabamento=translucido
+po,"Quem Disse, Berenice? Pó Solto Translúcido Amarelê Instamatte",solto,,matte,,translucido,,69.90,https://www.boticario.com.br/maquiagem/rosto/
+lavagem,Salon Line Kit Hidra Hidrata e Preenche 300 ml,kit_lavagem,liso;ondulado;cacheado;crespo,,,,,,https://www.salonline.com.br/kit-shampoo-e-condicionador-hidra-hidrata-e-preenche-salon-line-300ml
+lavagem,Salon Line Kit S.O.S Cachos Coco Profundo Litrão,kit_lavagem,cacheado;crespo,,,,,66.15,https://www.salonline.com.br/lp-sos-cachos
+lavagem,Salon Line Condicionador Meu Liso Hialurônico 300 ml,condicionador,liso,,,,,21.00,https://www.salonline.com.br/meu-liso-hialuronico
+tratamento,Salon Line Máscara S.O.S Cachos Coco Tratamento Profundo 500 g,mascara,cacheado;crespo,,,,,29.40,https://www.salonline.com.br/mascara-de-hidratacao-sos-cachos-coco-tratamento-profundo-500g
+tratamento,Salon Line Kit S.O.S Cachos Coco com Máscara e Creme de Pentear,kit_tratamento,cacheado;crespo,,,,,,https://www.salonline.com.br/kit-sos-cachos-coco-shampoo-condicionador-creme-de-pentear-mascara-salon-line
+protecao,Salon Line Kit S.O.S Hidratação com Spray Protetor Térmico Meu Liso,spray_termico,liso,,,,,96.60,https://www.salonline.com.br/meu-liso-hialuronico
+base,Ruby Rose Base Líquida Daily Skin Classic,liquido,,semimatte,baixa,,,36.00,https://www.rubyrosemaquiagem.com.br/rosto/base-liquida
+base,Make B. Base Líquida Efeito Mate Salicylic,liquido,,matte,,,,99.90,https://www.boticario.com.br/base-liquida-efeito-mate-make-b-salicylic-260n-30g
+corretivo,Ruby Rose Corretivo Líquido Blur Me Classic,liquido,,semimatte,baixa,,,21.00,https://www.rubyrosemaquiagem.com.br/produto/4767-corretivo-liquido-blur-me-l5-classic-hbm605-1-ruby-rose
+corretivo,Make B. Corretivo Líquido Effect,liquido,,matte,alta,,,69.90,https://www.boticario.com.br/make-b/maquiagem/rosto/corretivo
+corretivo,MAC Corretivo Studio Fix 36HR,liquido,,,,,,219.00,https://www.maccosmetics.com.br/products/13830/produtos/maquiagem/rosto
+corretivo,MAC Corretivo Hidratante Studio Radiance 24hrs,liquido,,luminoso,,,,249.00,https://www.maccosmetics.com.br/product/13844/128597/produtos/maquiagem/rosto/corretivo/corretivo-hidratante-studio-radiance-24hrs-luminous-lift
+po,Ruby Rose Pó Solto Silk System Wonder,solto,,,,colorido,,23.37,https://www.rubyrosemaquiagem.com.br/porosto/po
+po,"Quem Disse, Berenice? Pó Compacto Facial Translúcido Instamatte",compacto,,matte,,translucido,,79.90,https://www.quemdisseberenice.com.br/maquiagem/rosto/po-para-rosto?marca=instamatte
+po,MAC Pó Solto Translúcido Studio Fix Pro Set + Blur,solto,,,,translucido,,299.00,https://www.maccosmetics.com.br/pt-e-br/products/13830/produtos/maquiagem/rosto
+protecao,Salon Line Spray Protetor Térmico Meu Liso Hialurônico 240 ml,spray,liso,,,,,23.10,https://www.salonline.com.br/spray-defrizante-protetor-termico-meu-liso-hialuronico-240ml

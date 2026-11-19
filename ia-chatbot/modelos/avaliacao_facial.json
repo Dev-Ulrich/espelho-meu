@@ -1,0 +1,8 @@
+{
+  "amostras": 35,
+  "concordancia_rotulos_provisorios": 0.2571428571428571,
+  "f1_macro_rotulos_provisorios": 0.23030303030303026,
+  "baseline": 0.14285714285714285,
+  "hipoteses_humanas_comparaveis": 30,
+  "previsoes_coincidentes_com_arthur": 4
+}

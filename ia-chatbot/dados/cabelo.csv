@@ -1,0 +1,37 @@
+textura,comprimento,manutencao,recomendacao
+liso,curto,baixa,corte curto texturizado
+liso,curto,media,corte curto texturizado
+liso,curto,alta,corte curto texturizado
+liso,medio,baixa,corte de base reta
+liso,medio,media,long bob
+liso,medio,alta,long bob
+liso,longo,baixa,corte de base reta
+liso,longo,media,camadas longas
+liso,longo,alta,camadas longas
+ondulado,curto,baixa,corte curto texturizado
+ondulado,curto,media,corte curto texturizado
+ondulado,curto,alta,corte curto texturizado
+ondulado,medio,baixa,corte de base reta
+ondulado,medio,media,long bob
+ondulado,medio,alta,long bob
+ondulado,longo,baixa,corte de base reta
+ondulado,longo,media,camadas longas
+ondulado,longo,alta,camadas longas
+cacheado,curto,baixa,corte curto em camadas
+cacheado,curto,media,corte curto em camadas
+cacheado,curto,alta,corte curto em camadas
+cacheado,medio,baixa,corte de base reta
+cacheado,medio,media,camadas longas
+cacheado,medio,alta,camadas longas
+cacheado,longo,baixa,corte de base reta
+cacheado,longo,media,camadas longas
+cacheado,longo,alta,camadas longas
+crespo,curto,baixa,corte curto em camadas
+crespo,curto,media,corte curto em camadas
+crespo,curto,alta,corte curto em camadas
+crespo,medio,baixa,corte de base reta
+crespo,medio,media,camadas longas
+crespo,medio,alta,camadas longas
+crespo,longo,baixa,corte de base reta
+crespo,longo,media,camadas longas
+crespo,longo,alta,camadas longas
