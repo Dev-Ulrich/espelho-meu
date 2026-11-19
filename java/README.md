@@ -19,3 +19,10 @@ Monte um ZIP com o projeto completo sem `target/`, o script de criação de tabe
 5. A consultoria usa `GET /consultoria/cabelo/questionario` e `POST /consultoria/cabelo` com sessão válida. Os CRUDs administrativos exigem `ADMIN`.
 
 Publique Java e Flask com a chave compartilhada e a migração aplicada antes de promover o novo front ao domínio público. Mantenha `ESPELHO_DEMO_LOCAL` desativada nos ambientes publicados.
+
+
+## Serviço Java do monorepo no Render
+
+O serviço [espelho-meu-java](https://dashboard.render.com/web/srv-dbv7qu6tlv9c73831ig0) usa o repositório `Dev-Ulrich/espelho-meu`, a branch `codex/autenticacao-consultoria-admin` e o Dockerfile `java/Dockerfile` com contexto `java`.
+
+O endpoint [`/saude`](https://espelho-meu-java.onrender.com/saude) verifica o processo Java. O endpoint [`/saude/banco`](https://espelho-meu-java.onrender.com/saude/banco) retorna HTTP 200 quando o serviço encontra a tabela de credenciais no Oracle. Antes de publicar a troca de origem no front, verifique também cadastro, login, permissão de administrador e uma consulta capilar completa.

@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/java/:path*", "destination": "https://espelhomeu-api.onrender.com/:path*" },
+    { "source": "/api/java/:path*", "destination": "https://espelho-meu-java.onrender.com/:path*" },
     { "source": "/((?!api/|assets/).*)", "destination": "/index.html" }
   ]
 }
