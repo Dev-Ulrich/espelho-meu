@@ -1,13 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { loadHairQuestionnaire, type HairQuestion } from '../../services/api/hairQuestionnaire';
 import { privateApi } from '../../services/api/privateApi';
 import styles from '../authenticated/workspace.module.css';
 
 type Answer = string | string[];
-type Question = {
-  id: string; titulo: string; opcoes: [string, string][]; ajuda?: string; multipla: boolean;
-  quando?: Record<string, string[]>; descricoes?: Record<string, string>;
-};
 type Cut = { id: string; nome: string; motivo: string; como_pedir: string; observacoes: string[]; penteados: string[] };
 type Product = { nome: string; preco?: string | null; ajustes: string[] };
 type Result = {
@@ -26,18 +23,19 @@ const steps = [
 export function HairConsultationPage() {
   const { etapa } = useParams();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<HairQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
   const [result, setResult] = useState<Result>();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState(false);
   const [sending, setSending] = useState(false);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    privateApi<{ perguntas: Question[] }>('/consultoria/cabelo/questionario', { signal: controller.signal })
-      .then(data => { if (!controller.signal.aborted) { setQuestions(data.perguntas); setLoading(false); } })
+    loadHairQuestionnaire(controller.signal, () => setRetrying(true))
+      .then(data => { if (!controller.signal.aborted) { setQuestions(data); setLoading(false); } })
       .catch(cause => { if (!controller.signal.aborted) { setError(cause.message); setLoading(false); } });
     return () => controller.abort();
   }, [attempt]);
@@ -49,7 +47,7 @@ export function HairConsultationPage() {
     return Object.entries(question.quando ?? {}).every(([key, values]) => values.includes(String(answers[key])));
   });
   const fields = active.filter(question => (steps[index].fields as readonly string[]).includes(question.id));
-  const missing = (question: Question) => !question.multipla && !answers[question.id];
+  const missing = (question: HairQuestion) => !question.multipla && !answers[question.id];
   const needsPhoto = answers.formato_manual === 'foto';
   const firstMissing = steps.findIndex(step => active.some(question =>
     (step.fields as readonly string[]).includes(question.id) && (missing(question)
@@ -90,9 +88,9 @@ export function HairConsultationPage() {
     <h1 className={styles.title}>Consultoria de cabelo</h1>
     <ol className={styles.nav} aria-label="Etapas da consultoria">{steps.map((step, position) =>
       <li key={step.id}><span aria-current={position === index ? 'step' : undefined}>{position + 1}. {step.label}</span></li>)}</ol>
-    {loading ? <p role="status">Carregando questionário…</p> : questions.length === 0 ?
+    {loading ? <p role="status">{retrying ? 'A consultoria está iniciando. Tentando carregar novamente…' : 'Carregando questionário…'}</p> : questions.length === 0 ?
       <div className={styles.panel}><p role="alert">{error || 'Questionário indisponível.'}</p>
-        <button className="action-link action-link--outline" onClick={() => { setLoading(true); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
+        <button className="action-link action-link--outline" onClick={() => { setLoading(true); setRetrying(false); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
       : index === 4 && result ? <div className={styles.panel}>
         <h2 className={styles.title}>Suas recomendações</h2>
         {result.facial.formato && <p>Formato facial de referência: {result.facial.formato}</p>}
