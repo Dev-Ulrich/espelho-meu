@@ -44,3 +44,20 @@ Os notebooks incluem as métricas por classe e as matrizes de confusão. Para re
 A API Java chama `/api/privado/cabelo/questionario` e `/api/privado/cabelo/analisar` com a mesma `ESPELHO_IA_INTERNAL_KEY` configurada nos dois serviços. Para executar a demo antiga somente em desenvolvimento local, inicie o Flask com `ESPELHO_DEMO_LOCAL=1`.
 
 Para análise de formato facial em Linux, o MediaPipe precisa de EGL e GLES, e o OpenCV precisa de GL e GLib. A imagem do [Dockerfile](Dockerfile) inclui `libegl1`, `libgles2`, `libgl1` e `libglib2.0-0` e executa o verificador com o detector real durante o build.
+
+O MediaPipe está fixado em `0.10.21`, com NumPy `1.26.4` e OpenCV `4.11.0.86`.
+A versão `1.2.2` abortou no build do Render com `CHECK in NumCPUs:
+maybe_cpus.has_value()` (TCMalloc). A falha foi reproduzida ocultando `/sys` no
+contêiner; a combinação fixada passou no mesmo ambiente, incluindo `pip check`,
+os modelos de recomendação e a detecção real de imagem sem rosto. Não remova o
+teste facial do build para contornar esse erro.
+
+Para repetir a verificação de compatibilidade em Linux após construir a imagem:
+
+```bash
+docker build -t espelho-meu-ia:teste ./ia-chatbot
+mkdir -p /tmp/espelho-empty-sys
+docker run --rm --network none \
+  --mount type=bind,src=/tmp/espelho-empty-sys,dst=/sys,readonly \
+  espelho-meu-ia:teste sh -c 'pip check && python verificar_demo.py'
+```

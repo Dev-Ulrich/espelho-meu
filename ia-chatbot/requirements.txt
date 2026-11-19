@@ -5,4 +5,8 @@ scikit-learn==1.8.0
 gunicorn==25.3.0; platform_system != "Windows"
 Pillow==12.3.0
 requests==2.34.2
-mediapipe==1.2.2
+# 1.2.2 aborta no TCMalloc quando o builder não expõe a topologia de CPU em /sys.
+# Combinação validada com /sys vazio, incluindo os modelos joblib existentes.
+mediapipe==0.10.21
+numpy==1.26.4
+opencv-contrib-python==4.11.0.86
