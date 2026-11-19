@@ -1,13 +1,16 @@
 import { useId, useState } from 'react';
-import { ActionLink } from '../../../components/ui/ActionLink';
+import { Link } from 'react-router';
 import { paths } from '../../../app/paths';
+import { useSession } from '../../../app/session';
 import { examples } from './examples';
 import './simulation-preview.css';
 
 export function SimulationPreview() {
   const id = useId();
+  const { state } = useSession();
   const [activeIndex, setActiveIndex] = useState(0);
   const example = examples[activeIndex];
+  const signedIn = state.status === 'signed-in';
   function move(offset: number) {
     setActiveIndex(index => (index + offset + examples.length) % examples.length);
   }
@@ -16,7 +19,9 @@ export function SimulationPreview() {
       <h2 id={`${id}-title`}>Veja antes de decidir</h2>
       <p>Explore possibilidades de cabelo e maquiagem com referências ilustrativas.</p>
       <p>Esta demonstração não processa sua foto nem gera recomendações personalizadas.</p>
-      <ActionLink to={paths.consultoria}>Começar consultoria</ActionLink>
+      {signedIn
+        ? <Link className="action-link action-link--primary" to={paths.consultoria}>Começar consultoria</Link>
+        : <Link className="action-link action-link--primary" to={paths.cadastro} state={{ from: paths.consultoria }}>Começar consultoria</Link>}
     </div>
     <div className="simulation-preview__panel">
       <h3 id={`${id}-example`} aria-live="polite">{example.title}</h3>
