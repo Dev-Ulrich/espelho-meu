@@ -1,5 +1,11 @@
 # Recomendações por questionário no Render
 
+Serviço publicado: https://espelho-meu-ia.onrender.com
+
+Health check e os dois POSTs de demonstração foram validados com HTTP 200.
+O `front-end/vercel.json` encaminha `/api/recomendacoes/:area` para este serviço
+antes do fallback da SPA. A API Java continua independente.
+
 O `render.yaml` na raiz prepara um Web Service Python separado da API Java.
 Antes de criar, confira na conta Render se já existe um serviço Flask deste projeto.
 Reutilize-o se houver. O plano configurado no Blueprint é gratuito.

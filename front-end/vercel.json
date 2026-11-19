@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/api/recomendacoes/:area", "destination": "https://espelho-meu-ia.onrender.com/api/recomendacoes/:area" },
     { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ]
 }
+~
