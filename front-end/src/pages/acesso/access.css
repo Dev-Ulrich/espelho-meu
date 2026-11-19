@@ -33,3 +33,14 @@
   .identity-panel__headline { white-space: normal; }
   .access-content { max-width: none; }
 }
+
+.identity-panel { background: #2d2035; color: #faf7f2; }
+.identity-panel__portrait { border-radius: 48% 48% 10px 10px / 37% 37% 10px 10px; }
+.access-content .action-link { border-radius: 8px; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduced-motion]) .identity-panel__portrait { animation: editorial-in .65s ease-out both; }
+}
+@media (max-width: 700px) {
+  .access-content { grid-row: 1; }
+  .identity-panel { display: none; }
+}

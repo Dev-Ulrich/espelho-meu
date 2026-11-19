@@ -95,3 +95,9 @@
     padding: 14px;
   }
 }
+
+.help-page { font-family: Lato, system-ui, sans-serif; }
+.help-page h1 { color: #33223b; font-size: clamp(2.5rem, 6vw, 4.25rem); font-weight: 600; }
+.help-page h2 { color: #33223b; }
+.help-page details[open] { border-color: #b294bd; }
+.help-page details[open] summary { color: var(--purple); }

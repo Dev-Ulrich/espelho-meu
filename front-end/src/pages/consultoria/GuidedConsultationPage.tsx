@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-r
 import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
 import { PrivateApiError, privateApi } from '../../services/api/privateApi';
 import { GuidedResults, type ConsultationResult } from './GuidedResults';
+import { editorialPhotos as photos } from '../home/editorialContent';
 import styles from '../authenticated/workspace.module.css';
 import guided from './guidedConsultation.module.css';
 
@@ -21,6 +22,15 @@ const makeupSteps = [
   { id: 'produtos', label: 'Orçamento e produtos', fields: ['produto', 'formato_base', 'formato_corretivo', 'formato_po', 'cor_po', 'orcamento', 'selos'] },
   ...hairSteps.slice(3),
 ];
+
+// Illustrations are mapped to the questionnaire's stable option IDs.
+const references: Partial<Record<string, Record<string, string>>> = {
+  apresentacao: { masculino: photos.curls, feminino: photos.waves },
+  textura: { liso: photos.bob, ondulado: photos.natural, cacheado: photos.hair, crespo: photos.coils },
+  penteado: { solto: photos.waves, preso: photos.luminous, semipreso: photos.makeup },
+  acabamento: { matte: photos.matte, natural: photos.natural, luminoso: photos.luminous },
+  ocasiao: { evento: photos.evening, dia_a_dia: photos.natural, trabalho: photos.matte },
+};
 
 export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const base = `/consultoria/${area}`;
@@ -162,7 +172,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
         {error && needsPhoto && <Link className="action-link action-link--outline" to={base + '/perfil?pergunta=formato_manual'}
           onClick={() => updateAnswer('formato_manual', '')}>Escolher o formato do rosto</Link>}
         <div className={guided.reviewActions}>
-          <button className="action-link action-link--primary">Enviar e ver recomendações →</button>
+          <button className="action-link action-link--primary">Enviar e ver recomendações</button>
           <Link className="action-link action-link--outline" to={ordered.length ? questionUrl(ordered[ordered.length - 1]) : '/consultoria'}
             onClick={() => setError('')}>Voltar às perguntas</Link>
         </div>
@@ -170,7 +180,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
         <p className={guided.eyebrow}>{areaLabel} · Uma escolha de cada vez</p>
         <progress className={guided.progress} max={Math.max(ordered.length, 1)} value={Math.max(position + 1, 0)} aria-label="Progresso da consultoria" />
         <p className={guided.progressNote}>O percurso se adapta às suas escolhas.</p>
-        <form className={`${styles.panel} ${guided.question}`} onSubmit={submit}>
+        <form className={`${styles.panel} ${guided.question}`} key={question?.id ?? etapa} onSubmit={submit}>
           <h1 ref={heading} tabIndex={-1} id="consultation-question" className={styles.title}>{question?.titulo ?? steps[index].label}</h1>
           {question && <fieldset className={guided.options} aria-labelledby="consultation-question">
             {question.ajuda && (question.passos?.length ? <details className={guided.guide}>
@@ -179,6 +189,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
               <ol>{question.passos.map(step => <li key={step}>{step}</li>)}</ol>
               {question.nota_guia && <p>{question.nota_guia}</p>}
             </details> : <p>{question.ajuda}</p>)}
+            <div className={references[question.id] ? guided.visualOptions : guided.optionList}>
             {question.opcoes.map(([id, label]) => {
               const value = answers[question.id];
               const selected = Array.isArray(value) ? value : [];
@@ -187,7 +198,9 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
               const lengths = question.reguas && (presentation === 'ambos'
                 ? [['Masculino', question.reguas.masculino[id]], ['Feminino', question.reguas.feminino[id]]]
                 : [['', question.reguas[presentation === 'masculino' ? 'masculino' : 'feminino'][id]]]);
-              return <label className={guided.option} key={id}>
+              const reference = references[question.id]?.[id];
+              return <label className={reference ? `${guided.option} ${guided.visualOption}` : guided.option} key={id}>
+                {reference && <img src={reference} alt="" decoding="async" />}
                 <input type={question.multipla ? 'checkbox' : 'radio'} name={question.id} value={id}
                   checked={question.multipla ? selected.includes(id) : value === id}
                   onChange={event => updateAnswer(question.id, question.multipla
@@ -197,7 +210,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
                   {lengths?.map(([name, length]) => length && <small key={name}>{name ? `${name}: ` : ''}{length}</small>)}
                 </span>
               </label>;
-            })}
+            })}</div>
           </fieldset>}
           {question?.id === 'formato_manual' && needsPhoto && <label className={`${styles.field} ${guided.photo}`}>
             <strong>Uma foto pode ajudar</strong>
@@ -219,8 +232,8 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
           {error && <p className={styles.error} role="alert">{error}</p>}
           <div className={guided.actions}>
             <Link className="action-link action-link--outline" onClick={() => setError('')}
-              to={editing ? base + '/revisao' : previous ? questionUrl(previous) : '/consultoria'}>← Voltar</Link>
-            <button className="action-link action-link--primary">{editing ? 'Voltar à revisão' : 'Continuar →'}</button>
+              to={editing ? base + '/revisao' : previous ? questionUrl(previous) : '/consultoria'}>Voltar</Link>
+            <button className="action-link action-link--primary">{editing ? 'Voltar à revisão' : 'Continuar'}</button>
           </div>
         </form>
       </>}

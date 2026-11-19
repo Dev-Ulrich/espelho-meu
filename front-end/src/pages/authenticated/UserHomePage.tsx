@@ -11,12 +11,13 @@ export function UserHomePage() {
   const [error, setError] = useState('');
   if (state.status !== 'signed-in') return null;
   return <section className={styles.page}>
-    <h1 className={styles.title}>Minha conta</h1>
+    <header className={styles.workspaceHero}>
+      <div><h1 className={styles.title}>Minha conta</h1><p>Olá, {state.user.nome}.</p></div>
+    </header>
     <div className={styles.panel}>
-      <p>Olá, {state.user.nome}.</p><p>{state.user.email}</p>
+      <p>{state.user.email}</p>
       <div className={styles.actions}>
         <ActionLink to="/consultoria">Iniciar consultoria</ActionLink>
-        {state.user.role === 'ADMIN' && <ActionLink to="/admin" variant="outline">Painel administrativo</ActionLink>}
         <button className="action-link action-link--outline" disabled={busy} onClick={async () => {
           setBusy(true); setError('');
           try { await logout(); navigate('/entrar', { replace: true }); }

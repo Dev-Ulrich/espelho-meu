@@ -18,10 +18,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const controller = new AbortController();
     privateApi<User>('/auth/sessao', { signal: controller.signal }).then(user => {
-      if (!controller.signal.aborted) setState({ status: 'signed-in', user });
+      if (!controller.signal.aborted) setState(current => current.status === 'loading' ? { status: 'signed-in', user } : current);
     }).catch(error => {
-      if (!controller.signal.aborted) setState({ status: error instanceof PrivateApiError && error.status === 401
-        ? 'signed-out' : 'error' });
+      if (!controller.signal.aborted) setState(current => current.status === 'loading'
+        ? { status: error instanceof PrivateApiError && error.status === 401 ? 'signed-out' : 'error' }
+        : current);
     });
     return () => controller.abort();
   }, [attempt]);
@@ -61,5 +62,6 @@ export function RequireSession({ admin = false }: { admin?: boolean }) {
     <h1>Acesso restrito</h1><p>Esta área exige permissão de administrador.</p>
     <Link to={paths.conta}>Voltar à minha conta</Link>
   </section>;
+  if (!admin && state.user.role === 'ADMIN') return <Navigate to={paths.admin} replace />;
   return <Outlet />;
 }
