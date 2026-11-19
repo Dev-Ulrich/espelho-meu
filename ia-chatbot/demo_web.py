@@ -176,6 +176,25 @@ def instalar_demo(app, modelos, pasta_modelos, prever):
         }
         return jsonify(resposta)
 
+    @app.get("/api/privado/cabelo/questionario")
+    def questionario_capilar():
+        perguntas = [*CABELO, *COMUNS, *FINAL]
+        return jsonify(perguntas=[
+            {**p, "opcoes": list(p["opcoes"].items())} for p in perguntas
+        ])
+
+    @app.post("/api/privado/cabelo/analisar")
+    def analisar_capilar():
+        request.max_content_length = MAX_FOTO + 64 * 1024
+        try:
+            respostas = json.loads(request.form.get("respostas", ""))
+            if not isinstance(respostas, dict):
+                raise ValueError("Envie as respostas do questionário.")
+            respostas = validar({**respostas, "jornada": "cabelo"})
+        except ValueError as erro:
+            return jsonify(erro=str(erro)), 422
+        return analisar_consulta(respostas, request.files.get("foto"))
+
     def analisar_consulta(respostas, foto):
         manual = respostas.get("formato_manual")
         if manual == "foto" and not foto:

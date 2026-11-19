@@ -11,7 +11,7 @@ CASOS_DEMO = {
 
 
 def main():
-    with create_app().test_client() as client:
+    with create_app(modo_teste=True).test_client() as client:
         resposta = client.get("/api/saude")
         esperado = {"modelos": {area: True for area in CAMPOS}}
         if resposta.status_code != 200 or resposta.get_json() != esperado:

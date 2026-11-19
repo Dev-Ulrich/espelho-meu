@@ -16,10 +16,10 @@ export function HomePage() {
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-hero__copy">
           <h1 id="home-title">Seu estilo,<br />suas regras.</h1>
-          <p>Recomendações personalizadas de cabelo e maquiagem com IA, para você explorar, experimentar e realçar sua beleza única.</p>
+          <p>Recomendações personalizadas de cabelo, para você explorar, experimentar e realçar sua beleza única.</p>
           <div className="flex flex-wrap gap-4">
             <ActionLink to={paths.consultoria}>Começar consultoria <ArrowRight size={16} aria-hidden="true" /></ActionLink>
-            <ActionLink to={paths.catalogo} variant="outline">Explorar catálogo</ActionLink>
+            <ActionLink to="#como-funciona" variant="outline">Como funciona</ActionLink>
           </div>
         </div>
         <div className="hero-art">
@@ -28,8 +28,8 @@ export function HomePage() {
           <img className="hero-art__portrait" src={retrato} alt="" fetchPriority="high" />
           <div className="hero-art__outline"><img src={contorno} alt="" /></div>
           <ul className="hero-art__highlights" aria-label="O que você pode explorar">
-            <li><Scissors size={38} aria-hidden="true" />Simule cortes</li>
-            <li><img src={pincel} alt="" /><span>Descubra tons de maquiagem</span></li>
+            <li><Scissors size={38} aria-hidden="true" />Explore opções de corte</li>
+            <li><img src={pincel} alt="" /><span>Explore opções de coloração</span></li>
             <li><img src={brilhos} alt="" /><span>Recomendações com IA</span></li>
           </ul>
         </div>
