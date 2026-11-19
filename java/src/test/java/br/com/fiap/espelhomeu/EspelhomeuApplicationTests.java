@@ -57,6 +57,7 @@ class EspelhomeuApplicationTests {
         mvc.perform(get("/saude/banco")).andExpect(status().isOk());
         mvc.perform(get("/auth/sessao")).andExpect(status().isUnauthorized());
         mvc.perform(get("/consultoria/cabelo/questionario")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/consultoria/maquiagem/questionario")).andExpect(status().isUnauthorized());
         mvc.perform(post("/auth/cadastro").contentType("application/json").content(cadastro))
                 .andExpect(status().isUnauthorized());
         var csrfResponse = mvc.perform(get("/auth/csrf")).andExpect(status().isOk()).andReturn();
@@ -79,6 +80,8 @@ class EspelhomeuApplicationTests {
         mvc.perform(get("/produto").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/corte").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/consultoria/cabelo/questionario").session(session))
+                .andExpect(status().isServiceUnavailable());
+        mvc.perform(get("/consultoria/maquiagem/questionario").session(session))
                 .andExpect(status().isServiceUnavailable());
         jdbc.update("UPDATE T_EM_CREDENCIAL SET DS_ROLE = 'ADMIN'");
         mvc.perform(get("/usuario").session(session)).andExpect(status().isOk());

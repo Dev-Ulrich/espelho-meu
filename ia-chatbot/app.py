@@ -101,10 +101,12 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
         )
 
     @app.get("/api/simulacoes/status")
+    @app.get("/api/privado/simulacoes/status")
     def status_simulacao():
         return jsonify(disponivel=bool(chave_openai and codigo_demo))
 
     @app.post("/api/simulacoes/<area>")
+    @app.post("/api/privado/simulacoes/<area>")
     def simular(area):
         if area not in CAMPOS:
             return jsonify(erro="Área desconhecida."), 404

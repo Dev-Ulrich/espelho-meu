@@ -176,21 +176,24 @@ def instalar_demo(app, modelos, pasta_modelos, prever):
         }
         return jsonify(resposta)
 
-    @app.get("/api/privado/cabelo/questionario")
-    def questionario_capilar():
-        perguntas = [*CABELO, *COMUNS, *FINAL]
+    @app.get("/api/privado/<any(cabelo,maquiagem):jornada>/questionario")
+    def questionario_privado(jornada):
+        perguntas = (
+            [*CABELO, *COMUNS, *FINAL] if jornada == "cabelo"
+            else [*MAQUIAGEM, *COMUNS, *FINAL_MAKE, *FINAL]
+        )
         return jsonify(perguntas=[
             {**p, "opcoes": list(p["opcoes"].items())} for p in perguntas
         ])
 
-    @app.post("/api/privado/cabelo/analisar")
-    def analisar_capilar():
+    @app.post("/api/privado/<any(cabelo,maquiagem):jornada>/analisar")
+    def analisar_privado(jornada):
         request.max_content_length = MAX_FOTO + 64 * 1024
         try:
             respostas = json.loads(request.form.get("respostas", ""))
             if not isinstance(respostas, dict):
                 raise ValueError("Envie as respostas do questionário.")
-            respostas = validar({**respostas, "jornada": "cabelo"})
+            respostas = validar({**respostas, "jornada": jornada})
         except ValueError as erro:
             return jsonify(erro=str(erro)), 422
         return analisar_consulta(respostas, request.files.get("foto"))
