@@ -14,7 +14,7 @@
 .landing-page :is(small, figcaption) { color: var(--petrol); font-size: .8125rem; }
 .landing-page .action-link { min-height: 54px; border-radius: 14px; }
 .landing-page .action-link--outline { border-color: var(--line); color: var(--petrol); }
-.landing-hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.landing-hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 4vw, 48px); align-items: center; }
 .landing-hero__copy { display: grid; gap: 1.25rem; }
 .landing-eyebrow { color: var(--purple); font-size: .875rem; text-transform: uppercase; }
 .landing-hero__actions { display: flex; flex-wrap: wrap; gap: .75rem; }
@@ -30,7 +30,13 @@
 .landing-steps span { color: var(--purple); font-family: var(--heading-font); font-size: 1.3rem; }
 .landing-editorial { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.75rem; padding: clamp(16px, 2.5vw, 32px); background: #ede6f4; border-radius: 28px; }
 .landing-editorial img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: center 40%; border-radius: 20px; margin-bottom: .5rem; }
-.landing-faq > div { display: grid; gap: .5rem; padding: 1.25rem 1rem; border-bottom: 1px solid var(--line); }
+.landing-faq details { padding: 1.25rem 0; border-bottom: 1px solid var(--line); }
+.landing-faq summary { cursor: pointer; color: var(--petrol); font-size: 1.125rem; font-weight: 700; padding: .5rem 0; }
+.landing-faq details p { max-width: 70ch; padding-top: .75rem; }
+.landing-discover { color: var(--purple); text-decoration: underline; text-underline-offset: 4px; justify-self: start; padding-block: .5rem; }
+#como-funciona { scroll-margin-top: 2rem; }
+.landing-portraits > div:nth-child(2) { padding-top: 2rem; }
+.landing-portraits > div:nth-child(3) { padding-top: 4rem; }
 .landing-banner { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 1.5rem; background: var(--petrol); padding: clamp(20px, 3vw, 32px); border-radius: 24px; }
 .landing-banner h2 { color: var(--paper); }
 @media (max-width: 760px) {

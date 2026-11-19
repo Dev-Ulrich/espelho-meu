@@ -15,14 +15,14 @@ export function App() {
   return <SessionProvider><Routes>
     <Route element={<SiteLayout />}>
       <Route index element={<HomePage />} />
+      <Route path={paths.sobre} element={<AboutPage />} />
+      <Route path={paths.integrantes} element={<TeamPage />} />
+      <Route path={paths.integrantes + '/:id'} element={<MemberPage />} />
+      <Route path={paths.faq} element={<HelpPage faq />} />
+      <Route path={paths.contato} element={<ContactPage />} />
       <Route element={<RequireSession />}>
         <Route path={paths.conta} element={<UserHomePage />} />
         <Route path={paths.consultoria} element={<ConsultationStartPage />} />
-        <Route path={paths.sobre} element={<AboutPage />} />
-        <Route path={paths.integrantes} element={<TeamPage />} />
-        <Route path={paths.integrantes + '/:id'} element={<MemberPage />} />
-        <Route path={paths.faq} element={<HelpPage faq />} />
-        <Route path={paths.contato} element={<ContactPage />} />
         <Route path={paths.maquiagem} element={<Navigate to="/consultoria/maquiagem/perfil" replace />} />
         <Route path="/consultoria/maquiagem" element={<Navigate to="/consultoria/maquiagem/perfil" replace />} />
         <Route path="/consultoria/maquiagem/:etapa" element={<GuidedConsultationPage key="maquiagem" area="maquiagem" />} />

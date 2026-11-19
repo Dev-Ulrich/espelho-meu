@@ -56,7 +56,7 @@ export function HelpPage({ faq = false }: { faq?: boolean }) {
         </ul>
         <a className="help-page__back-link" href="#perguntas">Voltar às dúvidas frequentes</a>
       </section>
-      <ActionLink to={paths.catalogo}>Explorar catálogo</ActionLink>
+      <ActionLink to={paths.entrar}>Entrar para começar</ActionLink>
     </section>
   );
 }

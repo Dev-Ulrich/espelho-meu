@@ -121,3 +121,10 @@ button:disabled { cursor: not-allowed; }
   .site-header__actions { flex-wrap: wrap; }
   .site-header__actions .action-link { min-height: 44px; padding-inline: .7rem; }
 }
+
+/* A navegação institucional permanece disponível antes do login. */
+.site-menu--public { font-family: Lato, system-ui, sans-serif; font-size: 1rem; }
+.site-menu--public a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (max-width: 850px) {
+  .site-menu--public { justify-content: space-between; gap: .25rem .75rem; }
+}

@@ -21,7 +21,7 @@ export function SiteLayout({ access = false }: { access?: boolean }) {
       <main id="conteudo" tabIndex={-1}>
         <Outlet />
       </main>
-      <SiteFooter compact={access || pathname === '/'} />
+      <SiteFooter compact={access} />
     </>
   );
 }
