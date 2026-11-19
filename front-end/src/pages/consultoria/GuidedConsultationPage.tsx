@@ -51,6 +51,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
+  const [result, setResult] = useState<ConsultationResult>();
   const pendingResult = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -140,20 +141,25 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
       const recommendations = await privateApi<ConsultationResult>(base, { method: 'POST', body: payload, signal: request.signal });
       if (request.signal.aborted) return;
       const id = recommendations.consulta_id;
-      if (!recommendations[area] || !id) throw new Error('A consultoria retornou um resultado incompleto.');
-      try {
-        update(value => ({
-          ...value,
-          records: upsertConsultation(value.records, {
-            id, area, title: recommendations.cabelo?.cortes[0]?.nome
-              ?? recommendations.maquiagem?.recomendacao ?? 'Consultoria capilar',
-            date: new Date().toISOString(), favorite: false, result: recommendations, answers,
-          }),
-        }));
-      } catch {
-        toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
+      if (!recommendations[area]) throw new Error('A consultoria retornou um resultado incompleto.');
+      if (id) {
+        try {
+          update(value => ({
+            ...value,
+            records: upsertConsultation(value.records, {
+              id, area, title: recommendations.cabelo?.cortes[0]?.nome
+                ?? recommendations.maquiagem?.recomendacao ?? 'Consultoria capilar',
+              date: new Date().toISOString(), favorite: false, result: recommendations, answers,
+            }),
+          }));
+        } catch {
+          toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
+        }
+        navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
+      } else {
+        setResult(recommendations);
+        navigate(`${base}/resultado`);
       }
-      navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
     } catch (cause) {
       if (request.signal.aborted) return;
       const unavailable = cause instanceof PrivateApiError && [502, 503, 504].includes(cause.status);
