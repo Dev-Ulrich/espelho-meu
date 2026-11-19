@@ -4,6 +4,7 @@ import { ActionLink } from '../../components/ui/ActionLink';
 import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
 import makeupPortrait from '../../assets/figma/consultoria-maquiagem.webp';
 import styles from '../authenticated/workspace.module.css';
+import { PhotoPicker } from './foto/PhotoPicker';
 import guided from './guidedConsultation.module.css';
 
 const journeys = [
@@ -13,9 +14,12 @@ const journeys = [
 
 export function ConsultationStartPage() {
   const { state } = useSession();
+  const [photo, setPhoto] = useState<File | null>(null);
   const [reducedMotion, setReducedMotion] = useState(() => typeof document !== 'undefined'
     && document.documentElement.hasAttribute('data-reduced-motion'));
   const firstName = state.status === 'signed-in' ? state.user.nome.trim().split(/\s+/)[0] : '';
+  // Sessão real já existe; o limite de upload ainda depende do contrato da API.
+  const photoEnabled = state.status === 'signed-in';
 
   return <section className={`${styles.page} ${guided.page} ${guided.journeys}`}>
     <p className={guided.eyebrow}>{firstName ? `Olá, ${firstName} · Sua consultoria` : 'Sua consultoria'}</p>
@@ -28,6 +32,7 @@ export function ConsultationStartPage() {
         <ActionLink to={`/consultoria/${area}/perfil`}>Começar {area}</ActionLink>
       </article>)}
     </div>
+    <PhotoPicker enabled={photoEnabled} maxBytes={null} file={photo} onFileChange={setPhoto} />
     <button type="button" className="action-link action-link--outline" aria-pressed={reducedMotion} onClick={() => {
       const enabled = !reducedMotion;
       sessionStorage.setItem('espelho-reduced-motion', String(enabled));

@@ -48,7 +48,10 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }
     for (const path of ['/catalogo', '/recuperar-senha']) {
-      assert.match(render(path), /^<div class="toast-region"[^>]+><\/div>$/);
+      const orphan = render(path);
+      // Rotas removidas não montam página; o FeedbackProvider ainda renderiza a região de toast.
+      assert.match(orphan, /^<div class="toast-region"/);
+      assert.doesNotMatch(orphan, /Seu estilo|Gerar recomendações|Painel administrativo/);
     }
 
     const { GuidedResults } = await server.ssrLoadModule('/src/pages/consultoria/GuidedResults.tsx');
