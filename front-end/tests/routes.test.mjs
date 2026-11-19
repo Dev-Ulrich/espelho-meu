@@ -25,6 +25,11 @@ try {
     else if (url === '/entrar') assert.ok(html.includes('Login') && html.includes('em preparação'));
     else assert.ok(html.includes(expected), url + ' sem conteúdo esperado');
     assert.equal((html.match(/<h1[ >]/g) ?? []).length, 1, url + ' deve ter um h1');
+    if (url.startsWith('/cabelo')) {
+      assert.ok(html.includes('Produtos capilares'));
+      assert.ok(html.includes('Carregando produtos capilares'));
+    }
+    if (url.startsWith('/maquiagem')) assert.ok(!html.includes('Produtos capilares'));
     for (const [, href] of html.matchAll(/href="([^"]+)"/g)) {
       if (!href.startsWith('/') || href.startsWith('/src/') || href.startsWith('//')) continue;
       assert.ok(known.has(href.split(/[?#]/)[0]), url + ' com destino desconhecido: ' + href);

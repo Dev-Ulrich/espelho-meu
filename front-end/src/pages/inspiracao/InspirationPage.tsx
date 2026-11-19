@@ -24,6 +24,7 @@ import brushes from '../../assets/figma/maquiagem-Image5.png';
 import spray from '../../assets/figma/maquiagem-Image3.png';
 import sparkle from '../../assets/figma/maquiagem-CodiconSparkleFilled.svg';
 import './inspiration.css';
+import { HairProducts } from './HairProducts';
 
 function StyleDetails({ item, onClose, journey }: { item: Inspiration | null; onClose: () => void; journey: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -133,6 +134,7 @@ export function InspirationPage({ kind }: { kind: 'cabelo' | 'maquiagem' }) {
           <div><h3>{title}</h3><p>{description}</p></div>
         </article>)}</div>
       </section>
+      {isHair && <HairProducts />}
       {/* Faixa final e rodapé serão integrados pela Yasmin, conforme o guia. */}
     </div>
     <StyleDetails item={selected} onClose={() => setSelected(null)} journey={kind} />
