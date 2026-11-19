@@ -30,6 +30,12 @@ A simulação visual aparece no resultado de cada jornada. Seu uso depende da co
 
 O front acessa o Java no mesmo domínio pela rota `/api/java`. O proxy do Vite aponta para `127.0.0.1:8080` e o da Vercel para o serviço Java. A sessão usa cookie HttpOnly, e as requisições de escrita incluem o token obtido em `GET /auth/csrf`. O Flask recebe as chamadas de consultoria somente pelo Java. A [configuração da API Java](../java/README.md) descreve a migração e as variáveis necessárias.
 
+### Ativar a simulação de fotos
+
+1. Tenha faturamento ativo no [projeto da API da OpenAI](https://platform.openai.com/settings/organization/billing/overview) e crie uma [chave de API](https://platform.openai.com/api-keys) para ele.
+2. No [Render](https://dashboard.render.com/), abra o serviço Flask `espelho-meu-ia` e vá em **Environment**. Configure `OPENAI_API_KEY` com a chave da OpenAI e `SIMULACAO_CODIGO` com um código separado, que será digitado na tela. Guarde a chave da OpenAI apenas no serviço Flask. O modelo padrão é `gpt-image-2.6-sunburst`. Configure `OPENAI_IMAGE_MODEL` somente para escolher outro modelo de edição compatível.
+3. Salve e publique o serviço Flask. No site, entre na sua conta, termine a consultoria capilar, clique em **Simular este corte**, envie uma foto autorizada e informe o código de demonstração. A foto editada aparece no resultado.
+
 ## Organização e revisão
 
 | Caminho | Conteúdo |
