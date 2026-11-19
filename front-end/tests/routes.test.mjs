@@ -17,7 +17,7 @@ try {
     ['/cabelo?textura=Lisa', 'Bob reto'], ['/cabelo?textura=Lisa&comprimento=Curto', 'Nenhuma referência'],
     ['/maquiagem?categoria=Olhos', 'Olhar marcante'], ['/catalogo', 'Explorar cortes'], ['/entrar', 'Login em preparação'],
     ['/cadastro', 'Confirmar senha'], ['/recuperar-senha', 'Nenhum'], ['/minha-conta?secao=favoritas', 'referências favoritas'],
-    ['/consultoria?jornada=maquiagem', 'Entrar para continuar'], ['/ajuda', 'Central de ajuda'], ['/inexistente', 'Página não encontrada'],
+    ['/consultoria?jornada=maquiagem', 'Entrar para continuar'], ['/consultoria?jornada=cabelo', 'Gerar recomendação'], ['/ajuda', 'Central de ajuda'], ['/inexistente', 'Página não encontrada'],
   ];
   for (const [url, expected] of pages) {
     const html = renderToString(React.createElement(MemoryRouter, { initialEntries: [url] }, React.createElement(App)));
@@ -32,6 +32,11 @@ try {
     if (url === '/cabelo?textura=Lisa') assert.ok(!html.includes('aria-label="Ver detalhes de Crespo'));
     if (url === '/maquiagem?categoria=Olhos') assert.ok(!html.includes('aria-label="Ver detalhes de Glow'));
     if (url === '/consultoria?jornada=maquiagem') assert.ok(html.includes('/entrar?jornada=maquiagem'));
+    if (url === '/consultoria?jornada=maquiagem') assert.ok(!html.includes('Gerar recomendação'));
+    if (url === '/consultoria?jornada=cabelo') {
+      assert.equal((html.match(/<select[^>]*required/g) ?? []).length, 3);
+      assert.ok(html.includes('/entrar?jornada=cabelo') && html.includes('/cadastro?jornada=cabelo'));
+    }
 
   }
 } finally { await server.close(); }
