@@ -1,0 +1,10 @@
+.photo-picker { display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); color: var(--petrol); font: .875rem/1.5 'Lato', sans-serif; }
+.photo-picker > label { font-weight: 700; }
+.photo-picker input { min-width: 0; width: 100%; padding: 6px; }
+.photo-picker input::file-selector-button { min-height: 44px; margin-right: 10px; border: 1px solid var(--rose); border-radius: 20px; padding: 8px 14px; color: var(--petrol); background: var(--ivory); cursor: pointer; }
+.photo-picker input:disabled::file-selector-button { cursor: not-allowed; }
+.photo-picker figure { margin: 0; }
+.photo-picker figure img { width: 100%; max-height: 320px; object-fit: contain; border-radius: 12px; }
+.photo-picker figcaption { margin-top: 8px; text-align: center; }
+.photo-picker__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.photo-picker [role='status']:empty { display: none; }
