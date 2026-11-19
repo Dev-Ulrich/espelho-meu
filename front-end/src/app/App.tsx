@@ -8,6 +8,7 @@ import { AccountPage } from '../pages/conta/AccountPage';
 import { ConsultationPage } from '../pages/consultoria/ConsultationPage';
 import { CatalogPage } from '../pages/catalogo/CatalogPage';
 import { HelpPage } from '../pages/ajuda/HelpPage';
+import { AboutPage, ContactPage, MemberPage, TeamPage } from '../pages/institucional/InstitutionalPages';
 import { paths } from './paths';
 
 export function App() {
@@ -20,6 +21,11 @@ export function App() {
         <Route path={paths.catalogo} element={<CatalogPage />} />
         <Route path={paths.consultoria} element={<ConsultationPage />} />
         <Route path={paths.ajuda} element={<HelpPage />} />
+        <Route path={paths.faq} element={<HelpPage faq />} />
+        <Route path={paths.sobre} element={<AboutPage />} />
+        <Route path={paths.contato} element={<ContactPage />} />
+        <Route path={paths.integrantes} element={<TeamPage />} />
+        <Route path={`${paths.integrantes}/:id`} element={<MemberPage />} />
         <Route path="*" element={<StarterPage title="Página não encontrada" />} />
       </Route>
       <Route element={<SiteLayout withHeader={false} />}>

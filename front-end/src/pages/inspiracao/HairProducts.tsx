@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listProducts, type Product } from '../../services/api/products';
 import { createProductDemo } from '../../services/api/productDemo';
 import { ProductDemoForm } from './ProductDemoForm';
+import { RemoteProductDemo } from './RemoteProductDemo';
 
 const reais = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ready'; products: Product[] };
@@ -29,6 +30,7 @@ export function HairProducts() {
 
   return <section aria-labelledby="hair-products-title" aria-busy={state.status === 'loading'}>
     <h2 id="hair-products-title">Produtos capilares</h2>
+    {import.meta.env.PROD && <RemoteProductDemo onCreated={() => setAttempt(value => value + 1)} />}
     {import.meta.env.DEV && (configuration.demo
       ? <>
         <p className="notice">Modo de demonstração: cadastro e listagem usam a API de teste configurada.</p>

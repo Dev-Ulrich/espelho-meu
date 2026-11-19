@@ -3,7 +3,11 @@ import { ApiError } from '../../services/api/errors';
 import { productCategories, type ProductDemo, type ProductDraft } from '../../services/api/productDemo';
 import type { Product } from '../../services/api/products';
 
-export function ProductDemoForm({ demo, onCreated }: { demo: ProductDemo; onCreated: (product: Product) => void }) {
+export function ProductDemoForm({ demo, onCreated, remote = false }: {
+  demo: Pick<ProductDemo, 'create'> & { create(draft: ProductDraft, signal?: AbortSignal, code?: string): Promise<Product> };
+  onCreated: (product: Product) => void;
+  remote?: boolean;
+}) {
   const request = useRef<AbortController | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -16,12 +20,14 @@ export function ProductDemoForm({ demo, onCreated }: { demo: ProductDemo; onCrea
     setError('');
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
-    const draft = Object.fromEntries(new FormData(form)) as ProductDraft;
+    const data = new FormData(form);
+    const draft = Object.fromEntries(data) as ProductDraft;
+    const code = String(data.get('codigo') ?? '').trim();
     const controller = new AbortController();
     request.current = controller;
     setLoading(true);
     try {
-      const product = await demo.create(draft, controller.signal);
+      const product = await demo.create(draft, controller.signal, code);
       if (!controller.signal.aborted) {
         setCreated(product);
         onCreated(product);
@@ -48,6 +54,7 @@ export function ProductDemoForm({ demo, onCreated }: { demo: ProductDemo; onCrea
     <form onSubmit={submit} noValidate aria-busy={loading}>
       <fieldset disabled={loading || !!created}>
         <legend>Cadastro de produto capilar</legend>
+        {remote && <label>Código de demonstração<input type="password" name="codigo" required autoComplete="off" /></label>}
         <label>Categoria<select name="categoria" required defaultValue="Shampoo">
           {productCategories.map(value => <option key={value}>{value}</option>)}
         </select></label>
@@ -63,7 +70,7 @@ export function ProductDemoForm({ demo, onCreated }: { demo: ProductDemo; onCrea
         {loading ? 'Cadastrando…' : created ? 'Produto cadastrado' : 'Cadastrar produto de teste'}
       </button>
       {error && <p role="alert" className="notice">{error}</p>}
-      {created && <p role="status" className="notice">HTTP 201: {created.nome} cadastrado com ID {created.id}. A listagem será consultada novamente.</p>}
+      {created && <p role="status" className="notice">HTTP 201: {created.nome} cadastrado com ID {created.id}. {remote ? 'A consulta de confirmação ao Java já foi solicitada.' : 'A listagem será consultada novamente.'}</p>}
     </form>
   </details>;
 }

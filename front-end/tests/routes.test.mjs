@@ -11,13 +11,13 @@ try {
   const React = require('react');
   const { renderToString } = require('react-dom/server');
   const { MemoryRouter } = require('react-router');
-  const known = new Set(['/', '/cabelo', '/maquiagem', '/catalogo', '/entrar', '/cadastro', '/recuperar-senha', '/minha-conta', '/consultoria', '/ajuda']);
+  const known = new Set(['/', '/cabelo', '/maquiagem', '/catalogo', '/entrar', '/cadastro', '/recuperar-senha', '/minha-conta', '/consultoria', '/ajuda', '/sobre', '/faq', '/contato', '/integrantes', ...['victor', 'matheus-p', 'matheus-l', 'arthur', 'yasmin'].map(id => '/integrantes/' + id)]);
   const pages = [
     ['/', 'Seu estilo,'], ['/cabelo', 'Crespo com forma'], ['/cabelo?categoria=coloracoes', 'referências de colorações ainda estão em preparação'],
     ['/cabelo?textura=Lisa', 'Bob reto'], ['/cabelo?textura=Lisa&comprimento=Curto', 'Nenhuma referência'],
     ['/maquiagem?categoria=Olhos', 'Olhar marcante'], ['/catalogo', 'Explorar cortes'], ['/entrar', 'Login em preparação'],
     ['/cadastro', 'Confirmar senha'], ['/recuperar-senha', 'Nenhum'], ['/minha-conta?secao=favoritas', 'referências favoritas'],
-    ['/consultoria?jornada=maquiagem', 'Entrar para continuar'], ['/consultoria?jornada=cabelo', 'Gerar recomendação'], ['/ajuda', 'Central de ajuda'], ['/inexistente', 'Página não encontrada'],
+    ['/consultoria?jornada=maquiagem', 'Entrar para continuar'], ['/consultoria?jornada=cabelo', 'Gerar recomendação'], ['/ajuda', 'Central de ajuda'], ['/sobre', 'Sobre o Espelho Meu'], ['/faq', 'Perguntas frequentes'], ['/contato', 'Acessar o GitHub do projeto'], ['/integrantes', 'Matheus L.'], ['/integrantes/victor', 'Victor Ulrich'], ['/integrantes/inexistente', 'Integrante não encontrado'], ['/inexistente', 'Página não encontrada'],
   ];
   for (const [url, expected] of pages) {
     const html = renderToString(React.createElement(MemoryRouter, { initialEntries: [url] }, React.createElement(App)));

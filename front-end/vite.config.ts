@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/recomendacoes': 'http://127.0.0.1:5000',
+      '/api/simulacoes': 'http://127.0.0.1:5000',
+      '/api/produtos-demo': 'http://127.0.0.1:5000',
     },
   },
 });

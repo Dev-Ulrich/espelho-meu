@@ -1,17 +1,20 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { recommendHair, type HairProfile } from '../../services/api/hairRecommendation';
+import { getHairRecommendations, type HairProfile } from '../../services/api/hairRecommendation';
+
+import type { Recommendation } from '../../services/api/consultation';
+import { RecommendationResults } from './RecommendationResults';
 
 export function HairQuestionnaire() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [recommendation, setRecommendation] = useState('');
+  const [recommendation, setRecommendation] = useState<Recommendation[]>([]);
   const request = useRef<AbortController | null>(null);
 
   useEffect(() => () => { request.current?.abort(); }, []);
 
   function clearFeedback() {
     setError('');
-    setRecommendation('');
+    setRecommendation([]);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -34,7 +37,7 @@ export function HairQuestionnaire() {
     request.current = controller;
     setLoading(true);
     try {
-      const result = await recommendHair(profile, controller.signal);
+      const result = await getHairRecommendations(profile, controller.signal);
       if (!controller.signal.aborted) setRecommendation(result);
     } catch (cause) {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível gerar a recomendação. Tente novamente.');
@@ -48,7 +51,7 @@ export function HairQuestionnaire() {
 
   return <section className="hair-preview" aria-labelledby="hair-preview-title">
     <h2 id="hair-preview-title">Prévia de recomendação capilar</h2>
-    <p>Responda ao questionário para receber uma sugestão da IA. Não precisa de foto nem de conta.</p>
+    <p>Responda ao questionário para receber sugestões da IA. Não precisa de foto nem de conta.</p>
     <form onSubmit={submit} noValidate aria-busy={loading}>
       <fieldset disabled={loading} onChange={clearFeedback}>
         <legend>Todos os campos são obrigatórios</legend>
@@ -73,9 +76,7 @@ export function HairQuestionnaire() {
         {loading ? 'Gerando recomendação…' : 'Gerar recomendação'}
       </button>
       {error && <p className="notice" role="alert">{error}</p>}
-      <div role="status" aria-live="polite">
-        {recommendation && <div className="notice"><h3>Sugestão para você</h3><p>{recommendation}</p></div>}
-      </div>
     </form>
+    {recommendation.length > 0 && <RecommendationResults area="cabelo" results={recommendation} />}
   </section>;
 }

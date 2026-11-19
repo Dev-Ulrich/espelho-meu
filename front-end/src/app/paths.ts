@@ -1,6 +1,10 @@
 export const paths = {
   home: '/',
   ajuda: '/ajuda',
+  sobre: '/sobre',
+  integrantes: '/integrantes',
+  faq: '/faq',
+  contato: '/contato',
   cabelo: '/cabelo',
   maquiagem: '/maquiagem',
   catalogo: '/catalogo',

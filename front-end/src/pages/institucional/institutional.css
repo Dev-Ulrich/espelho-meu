@@ -1,0 +1,21 @@
+.institutional-page > .action-link { margin-top: 24px; }
+
+.institutional-team {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.institutional-team li {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
+.institutional-team a {
+  display: inline-block;
+  min-height: 32px;
+  font-weight: 700;
+}

@@ -9,9 +9,11 @@ from flask import Flask, abort, jsonify, request, send_from_directory
 
 from simulacao import MAX_FOTO, MODELO_PADRAO, editar_foto, preparar_foto
 
+from alternativas import carregar_perfis, listar_alternativas
 from configuracao import CAMPOS, RAIZ
 from demo_web import instalar_demo
 from cortes import NOMES_CORTES
+from produto_demo import instalar_produto_demo
 
 
 def create_app(pasta_modelos=RAIZ / "modelos"):
@@ -20,11 +22,28 @@ def create_app(pasta_modelos=RAIZ / "modelos"):
     chave_openai = environ.get("OPENAI_API_KEY", "").strip()
     codigo_demo = environ.get("SIMULACAO_CODIGO", "").strip()
     modelo_imagem = environ.get("OPENAI_IMAGE_MODEL", MODELO_PADRAO).strip() or MODELO_PADRAO
+    origens_front = {
+        origem.strip() for origem in environ.get(
+            "ESPELHO_FRONT_ORIGINS", "https://espelho-meu-two.vercel.app"
+        ).split(",") if origem.strip()
+    }
+    perfis = {area: carregar_perfis(area) for area in CAMPOS}
     modelos = {}
     for area in CAMPOS:
         arquivo = pasta_modelos / f"{area}.joblib"
         if arquivo.is_file():
             modelos[area] = joblib.load(arquivo)
+
+    @app.after_request
+    def cors_front(resposta):
+        if request.path.startswith(("/api/recomendacoes/", "/api/simulacoes/", "/api/produtos-demo/")):
+            origem = request.headers.get("Origin")
+            resposta.vary.add("Origin")
+            if origem in origens_front:
+                resposta.headers["Access-Control-Allow-Origin"] = origem
+                resposta.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+                resposta.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Simulacao-Codigo, X-Produto-Demo-Codigo"
+        return resposta
 
     def prever(area, dados):
         perfil = pd.DataFrame([dados], columns=list(CAMPOS[area]))
@@ -58,7 +77,11 @@ def create_app(pasta_modelos=RAIZ / "modelos"):
         if area not in modelos:
             return jsonify(erro="Modelo indisponível. Execute python treinar.py e reinicie a API."), 503
 
-        return jsonify(area=area, recomendacao=prever(area, dados))
+        principal = prever(area, dados)
+        return jsonify(
+            area=area, recomendacao=principal,
+            alternativas=listar_alternativas(area, dados, principal, perfis[area]),
+        )
 
     @app.get("/api/simulacoes/status")
     def status_simulacao():
@@ -101,7 +124,9 @@ def create_app(pasta_modelos=RAIZ / "modelos"):
         return app.response_class(imagem, mimetype="image/jpeg", headers={"Cache-Control": "no-store"})
 
     @app.errorhandler(413)
-    def foto_grande(_erro):
+    def corpo_grande(_erro):
+        if request.path.startswith("/api/produtos-demo/"):
+            return jsonify(erro="O corpo do cadastro excede o limite de 8 KB."), 413
         return jsonify(erro="A foto deve ter até 5 MB."), 413
 
     if (pasta_front / "index.html").is_file():
@@ -116,6 +141,7 @@ def create_app(pasta_modelos=RAIZ / "modelos"):
                 return send_from_directory(pasta_front, caminho)
             return send_from_directory(pasta_front, "index.html")
 
+    instalar_produto_demo(app)
     instalar_demo(app, modelos, pasta_modelos, prever)
     if not (pasta_front / "index.html").is_file():
         app.add_url_rule("/", "inicio_demo", app.view_functions["demo"])
