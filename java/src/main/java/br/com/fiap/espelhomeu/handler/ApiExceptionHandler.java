@@ -25,6 +25,12 @@ public class ApiExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(org.springframework.dao.DataAccessResourceFailureException.class)
+    public ResponseEntity<ErrorResponseDto> conexaoBanco() {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponseDto("Serviço indisponível", "O banco de dados está indisponível."));
+    }
+
     @ExceptionHandler(ErroBancoDadosException.class)
     public ResponseEntity<ErrorResponseDto> erroBancoDados(ErroBancoDadosException e) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, error) ->
                                 response.setStatus(request.getUserPrincipal() == null ? 401 : 403)))
                 .authorizeHttpRequests(routes -> routes
-                        .requestMatchers(HttpMethod.GET, "/auth/csrf").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/csrf", "/saude", "/saude/banco").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/cadastro", "/auth/login").permitAll()
                         .requestMatchers("/auth/sessao", "/auth/logout", "/consultoria/cabelo/**").authenticated()
                         .anyRequest().hasRole("ADMIN"))

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @SpringBootTest(properties = {
     "spring.datasource.url=jdbc:h2:mem:auth;MODE=Oracle;DB_CLOSE_DELAY=-1",
     "spring.datasource.username=sa",
-    "spring.datasource.password=",
+    "spring.datasource.password=teste-local",
     "spring.datasource.driver-class-name=org.h2.Driver"
 })
 class EspelhomeuApplicationTests {
@@ -53,6 +53,8 @@ class EspelhomeuApplicationTests {
                 {"nome":"Pessoa Teste","email":"pessoa@example.com","dataNascimento":"2001-04-03",
                  "senha":"exemplo-seguro","role":"ADMIN"}
                 """;
+        mvc.perform(get("/saude")).andExpect(status().isOk());
+        mvc.perform(get("/saude/banco")).andExpect(status().isOk());
         mvc.perform(get("/auth/sessao")).andExpect(status().isUnauthorized());
         mvc.perform(get("/consultoria/cabelo/questionario")).andExpect(status().isUnauthorized());
         mvc.perform(post("/auth/cadastro").contentType("application/json").content(cadastro))
