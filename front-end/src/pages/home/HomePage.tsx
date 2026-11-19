@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 import { paths } from '../../app/paths';
 import { useSession } from '../../app/session';
 import { areas, editorialPhotos, type EditorialArea } from './editorialContent';
-import { SimulationPreview } from './simulation-preview/SimulationPreview';
 import './home.css';
 
 export function ConsultationLinks({ area, tryOn = false }: { area?: EditorialArea; tryOn?: boolean }) {
@@ -59,7 +58,6 @@ export function HomePage() {
         <div><h3>{title}</h3><p>{description}</p></div>
       </li>)}</ol>
     </section>
-    <SimulationPreview />
     <section className="editorial-container editorial-section editorial-explore" aria-labelledby="explore-title">
       <h2 id="explore-title">Explore as consultorias</h2>
       <div className="editorial-duo">
