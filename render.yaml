@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: espelho-meu-ia
+    runtime: python
+    plan: free
+    rootDir: ia-chatbot
+    buildCommand: pip install -r requirements.txt && python verificar_demo.py
+    startCommand: gunicorn --bind "0.0.0.0:$PORT" "app:create_app()"
+    healthCheckPath: /api/saude
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
