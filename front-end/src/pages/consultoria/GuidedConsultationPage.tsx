@@ -5,6 +5,7 @@ import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } f
 import { PrivateApiError, privateApi } from '../../services/api/privateApi';
 import { GuidedResults, type ConsultationResult } from './GuidedResults';
 import { editorialPhotos as photos } from '../home/editorialContent';
+import { hairVisual, type HairVisual } from './hairReferences';
 import styles from '../authenticated/workspace.module.css';
 import guided from './guidedConsultation.module.css';
 
@@ -54,7 +55,16 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   useEffect(() => {
     const controller = new AbortController();
     loadQuestionnaire(area, controller.signal, () => setRetrying(true))
-      .then(data => { if (!controller.signal.aborted) { setQuestions(data); setLoading(false); } })
+      .then(data => { if (!controller.signal.aborted) {
+        setQuestions(data);
+        setAnswers(previous => {
+          const next = { ...previous };
+          if (next.formato_manual === 'nao_sei') delete next.formato_manual;
+          if (next.tom === 'nao_sei') delete next.tom;
+          return next;
+        });
+        setLoading(false);
+      } })
       .catch(cause => { if (!controller.signal.aborted) { setError(cause.message); setLoading(false); } });
     return () => controller.abort();
   }, [area, attempt]);
@@ -139,6 +149,9 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   }
 
   const areaLabel = area === 'cabelo' ? 'Cabelo' : 'Maquiagem';
+  const presentationPreference = answers.apresentacao === 'masculino' || answers.apresentacao === 'feminino' || answers.apresentacao === 'ambos'
+    ? answers.apresentacao
+    : undefined;
   const previous = ordered[position - 1];
   const questionLabel = (field: ConsultationQuestion, id: string, label: string) => {
     if (field.id !== 'subtipo' || id === 'nao_sei') return label;
@@ -188,6 +201,12 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
               <summary>Como identificar meu subtom?</summary>
               <p>{question.ajuda}</p>
               <ol>{question.passos.map(step => <li key={step}>{step}</li>)}</ol>
+              {question.id === 'subtom' && <div className={guided.subtomGuide} aria-label="Exemplos para observar veias e metais">
+                {(['quente','frio','neutro','oliva'] as const).map(optionId => {
+                  const visual = hairVisual('subtom', optionId, presentationPreference, answers);
+                  return visual ? <figure key={optionId}><img src={visual.image} alt="" /><img src={visual.secondary} alt="" /><figcaption>{optionId[0].toUpperCase() + optionId.slice(1)}</figcaption></figure> : null;
+                })}
+              </div>}
               {question.nota_guia && <p>{question.nota_guia}</p>}
             </details> : <p>{question.ajuda}</p>)}
             <div className={references[question.id] ? guided.visualOptions : guided.optionList}>
@@ -199,9 +218,13 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
               const lengths = question.reguas && (presentation === 'ambos'
                 ? [['Masculino', question.reguas.masculino[id]], ['Feminino', question.reguas.feminino[id]]]
                 : [['', question.reguas[presentation === 'masculino' ? 'masculino' : 'feminino'][id]]]);
-              const reference = references[question.id]?.[id];
+              const legacyReference = references[question.id]?.[id];
+              const visual: HairVisual | undefined = area === 'cabelo'
+                ? hairVisual(question.id, id, presentationPreference, answers)
+                : undefined;
+              const reference = visual?.image ?? legacyReference;
               return <label className={reference ? `${guided.option} ${guided.visualOption}` : guided.option} key={id}>
-                {reference && <img src={reference} alt="" decoding="async" />}
+                {reference && <span className={guided.visualReference}><img src={reference} alt="" decoding="async" />{visual?.secondary && <img src={visual.secondary} alt="" decoding="async" />}</span>}
                 <input type={question.multipla ? 'checkbox' : 'radio'} name={question.id} value={id}
                   checked={question.multipla ? selected.includes(id) : value === id}
                   onChange={event => updateAnswer(question.id, question.multipla

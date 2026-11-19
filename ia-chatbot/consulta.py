@@ -20,7 +20,7 @@ CABELO = [
     pergunta("subtipo","Qual desenho se aproxima mais dos seus fios?",[("a","A"),("b","B"),("c","C"),("nao_sei","Ainda não sei")],"As letras ajudam a descrever a curvatura e orientar a finalização.",{"textura":["liso","ondulado","cacheado","crespo"]}),
     pergunta("espessura","Como é a espessura de um fio isolado?",[("fino","Fino"),("medio","Médio"),("grosso","Grosso"),("nao_sei","Não sei")],"É a grossura de cada fio. Considere um fio solto, sem puxar o cabelo."),
     pergunta("volume","Qual é o volume aparente do seu cabelo?",[("baixo","Baixo"),("medio","Médio"),("alto","Alto"),("nao_sei","Não sei")],"Observe quanto espaço o cabelo ocupa seco e solto. O volume ajuda a escolher a distribuição de camadas e a quantidade inicial de finalizador."),
-    pergunta("formato_manual","Qual formato facial você quer usar?",[("foto","Analisar uma foto"),*LABELS.items(),("nao_sei","Não sei · comparar opções")],"A foto produz uma hipótese experimental. Você pode escolher um formato para comparar o resultado."),
+    pergunta("formato_manual","Qual formato facial você quer usar?",[("foto","Analisar uma foto"),*LABELS.items()],"A foto produz uma hipótese experimental. Você pode escolher um formato para comparar o resultado."),
     {
         **pergunta("comprimento", "Qual comprimento você deseja?", ROTULOS.items(),
                    "Compare com o cabelo seco, do jeito que costuma usar. Em cabelos ondulados, cacheados ou crespos, o comprimento aparente pode mudar com a finalização."),
@@ -46,7 +46,7 @@ MAQUIAGEM = [
     pergunta("sensibilidade","Sua pele costuma reagir a cosméticos?",[("sim","Sim"),("nao","Não"),("nao_sei","Não sei")],"Sensibilidade pode acompanhar qualquer tipo de pele. As indicações exigem conferir ingredientes e sua experiência anterior."),
 ]
 COMUNS = [
-    pergunta("tom","Como você descreve seu tom de pele?",[("claro","Claro"),("medio","Médio"),("escuro","Escuro"),("nao_sei","Não sei")],"Tom descreve quão clara ou escura a pele parece. Ele ajuda a procurar a família de tonalidades no fabricante."),
+    pergunta("tom","Como você descreve seu tom de pele?",[("claro","Claro"),("medio","Médio"),("escuro","Escuro")],"Tom descreve quão clara ou escura a pele parece. Ele ajuda a procurar a família de tonalidades no fabricante."),
     pergunta("subtom","Você conhece seu subtom?",[("quente","Quente"),("frio","Frio"),("neutro","Neutro"),("oliva","Oliva"),("nao_sei","Quero ajuda / não sei")],"Observe a pele sem maquiagem sob luz natural. Compare pequenas faixas de base quente, fria e neutra na transição rosto-pescoço e espere assentar. Escolha a que se mistura melhor. Veias e joias são pistas subjetivas. O subtom oliva pode aparecer em qualquer tom de pele."),
 ]
 FINAL_MAKE = [
@@ -68,7 +68,7 @@ GUIAS = {
     "subtipo": "Compare algumas mechas já secas, sem esticar os fios. Nos ondulados, cacheados e crespos, veja como as curvas mudam de A para C. No liso, compare o corpo do fio e as dobras nas pontas. Se estiver entre dois exemplos, use o mais comum no seu cabelo ou escolha ‘Ainda não sei’.",
     "espessura": "Pegue um fio solto e role-o entre o polegar e o indicador. Um fio fino costuma ser difícil de sentir. A grossura do fio é diferente do volume do cabelo todo.",
     "volume": "Deixe o cabelo seco e solto. Veja quanto ele se afasta da cabeça nas laterais e no topo. Compare com os desenhos. O volume pode mudar conforme o corte, o dia e a finalização.",
-    "formato_manual": "Prenda o cabelo, olhe de frente no espelho e compare testa, maçãs do rosto e mandíbula. Observe também se o rosto é mais longo que largo. Se ficar em dúvida, escolha ‘Não sei’ ou peça a análise da foto.",
+    "formato_manual": "Prenda o cabelo, olhe de frente no espelho e compare testa, maçãs do rosto e mandíbula. Observe também se o rosto é mais longo que largo. Se ficar em dúvida, peça a análise da foto.",
     "penteado": "Solto deixa os fios livres. Preso recolhe a maior parte do cabelo. Semipreso prende apenas uma parte, como o topo ou as mechas da frente.",
     "tecnica_cor": "Luzes costumam clarear várias mechas finas. Mechas localizadas destacam algumas áreas, como as laterais do rosto. Coloração global muda a cor em todo o cabelo.",
     "cor": "Tons quentes incluem cobre e caramelo. Tons frios incluem castanho acinzentado e loiro perolado. Cores fantasia incluem violeta, rosa e azul.",
@@ -96,7 +96,7 @@ for item in TODAS:
 MAPA = {p["id"]: p for p in TODAS}
 MAPA["subtom"]["passos"] = PASSOS_SUBTOM
 MAPA["subtom"]["nota_guia"] = (
-    "Se os testes discordarem, as veias forem pouco visíveis ou você ficar em dúvida entre quente e oliva, escolha ‘Não sei’."
+    "Se os testes discordarem, as veias forem pouco visíveis ou você ficar em dúvida entre quente e oliva, use as pistas como orientação subjetiva; nenhum teste determina o subtom sozinho."
 )
 
 

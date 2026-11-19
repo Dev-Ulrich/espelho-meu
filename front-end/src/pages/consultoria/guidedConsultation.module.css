@@ -104,6 +104,10 @@
 .guide summary { color: var(--purple); cursor: pointer; }
 .guide p, .guide ol { margin-top: .75rem; }
 .guide ol { list-style: decimal; padding-inline-start: 1.5rem; }
+.subtomGuide { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: .65rem; margin-top: .85rem; }
+.subtomGuide figure { display: grid; grid-template-columns: 1fr 64px; align-items: end; gap: 4px; padding: 6px; border: 1px solid var(--line); border-radius: 10px; }
+.subtomGuide img { width: 100%; aspect-ratio: 1.15; object-fit: cover; border-radius: 8px; }
+.subtomGuide figcaption { grid-column: 1 / -1; font-size: .8125rem; color: var(--petrol); }
 .results { display: grid; gap: 1.25rem; }
 .results header > p:first-child { margin-bottom: .75rem; }
 .resultLead, .resultCard { padding: clamp(16px, 2.5vw, 24px); }
@@ -124,7 +128,8 @@
 .optionList, .visualOptions { display: grid; gap: .65rem; }
 .visualOptions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 145px), 1fr)); }
 .visualOption { display: grid; grid-template-columns: auto 1fr; align-content: start; padding: .55rem; gap: .6rem; overflow: hidden; }
-.visualOption img { grid-column: 1 / -1; width: 100%; aspect-ratio: 1.15; object-fit: cover; object-position: center 37%; border-radius: 9px; }
+.visualReference { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 4px; }
+.visualOption img { width: 100%; aspect-ratio: 1.15; object-fit: cover; object-position: center 37%; border-radius: 9px; }
 .option:focus-within { outline: 2px solid var(--purple); outline-offset: 2px; }
 .journeyCard { box-shadow: 0 14px 36px #2d20350b; }
 @media (max-width: 480px) { .visualOptions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
