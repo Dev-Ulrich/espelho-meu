@@ -112,7 +112,8 @@
 .results header > p:first-child { margin-bottom: .75rem; }
 .resultLead, .resultCard { padding: clamp(16px, 2.5vw, 24px); }
 .resultLead { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: clamp(16px, 3vw, 32px); align-items: start; border-radius: 24px; background: #ede6f4; }
-.resultLead img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 16px; }
+.resultLead img { width: 100%; max-width: 300px; border-radius: 16px; }
+.resultCard > img { width: min(100%, 220px); height: auto; border-radius: 14px; }
 .resultLead > div, .resultCard, .productGroups, .productGroups ul { display: grid; gap: .75rem; }
 .resultLead small { color: var(--purple); }
 .results h2 { color: var(--petrol); font: 600 clamp(1.65rem, 3vw, 2rem)/1.1 var(--heading-font); }
@@ -123,7 +124,7 @@
 .resultCard :global(.action-link) { justify-self: start; }
 .productGroups ul { margin-top: .5rem; }
 .productGroups li { padding-top: .65rem; border-top: 1px solid var(--line); }
-@media (max-width: 550px) { .resultLead { grid-template-columns: minmax(0, 1fr); } .resultLead img { aspect-ratio: 4 / 3; } }
+@media (max-width: 550px) { .resultLead { grid-template-columns: minmax(0, 1fr); } .resultLead img { max-width: 240px; } }
 
 .optionList, .visualOptions { display: grid; gap: .65rem; }
 .visualOptions { grid-template-columns: repeat(3, minmax(0, 1fr)); }

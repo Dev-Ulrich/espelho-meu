@@ -51,6 +51,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
+  const consultationPhoto = useRef<{ id: string; file: File } | undefined>(undefined);
   const [result, setResult] = useState<ConsultationResult>();
   const pendingResult = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
@@ -102,7 +103,8 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     heading.current?.focus();
   }, [etapa, question?.id, sending]);
 
-  if (resultId) return <ConsultationResultView key={resultId} id={resultId} area={area} />;
+  if (resultId) return <ConsultationResultView key={resultId} id={resultId} area={area}
+    photo={consultationPhoto.current?.id === resultId ? consultationPhoto.current?.file : undefined} />;
   if (index < 0) return <Navigate to={base + '/perfil'} replace />;
   if (firstMissing && (index > stepFor(firstMissing) ||
     (!editing && question && position > ordered.indexOf(firstMissing)))) {
@@ -155,6 +157,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
         } catch {
           toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
         }
+        consultationPhoto.current = needsPhoto && photo ? { id, file: photo } : undefined;
         navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
       } else {
         setResult(recommendations);
@@ -277,7 +280,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   </section>;
 }
 
-function ConsultationResultView({ area, id }: { area: ConsultationArea; id: string }) {
+function ConsultationResultView({ area, id, photo }: { area: ConsultationArea; id: string; photo?: File }) {
   const [result, setResult] = useState<ConsultationResult>();
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -292,7 +295,7 @@ function ConsultationResultView({ area, id }: { area: ConsultationArea; id: stri
   }, [area, id, attempt]);
 
   return <section className={`${styles.page} ${guided.page}`}>
-    {result ? <GuidedResults result={result} area={area} /> : error ? <div className={styles.panel}>
+    {result ? <GuidedResults result={result} area={area} photo={photo} /> : error ? <div className={styles.panel}>
       <p role="alert">{error}</p>
       <button type="button" className="action-link action-link--outline"
         onClick={() => { setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button>

@@ -55,7 +55,7 @@ class ConsultationSimulationsTest {
               {"id":"b","nome":"Corte B","penteados":["Coque baixo"]},
               {"id":"c","nome":"Corte C","penteados":[]},
               {"id":"d","nome":"Corte D","penteados":[]}
-            ]}}
+            ],"opcoes_cor":[{"id":"cor-1","nome":"Violeta","tecnica":"Luzes"}]}}
             """;
 
     @Autowired WebApplicationContext context;
@@ -133,6 +133,18 @@ class ConsultationSimulationsTest {
         mvc.perform(get(path + "/imagem").param("card", "a").session(stranger)).andExpect(status().isNotFound());
         mvc.perform(multipart(path).session(stranger).with(csrf()).param("cards", "a"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void sendsOnlyRecommendedColorToTheDedicatedEditingEndpoint() throws Exception {
+        String path = consult("cabelo") + "/simulacoes";
+        enqueue(path, true, true, "cor-2").andExpect(status().isUnprocessableEntity());
+        enqueue(path, true, true, "cor-1").andExpect(status().isAccepted());
+        worker.process();
+
+        assertEquals(Map.of("Coloração: Violeta. Técnica de coloração: Luzes", 1), CALLS);
+        mvc.perform(get(path + "/imagem").param("card", "cor-1").session(owner))
+                .andExpect(status().isOk()).andExpect(content().bytes(JPEG));
     }
 
     @Test
@@ -234,7 +246,8 @@ class ConsultationSimulationsTest {
                         int field = body.indexOf("name=\"estilo\"");
                         int start = body.indexOf("\r\n\r\n", field) + 4;
                         String style = body.substring(start, body.indexOf("\r\n", start));
-                        int count = CALLS.merge(style, 1, Integer::sum);
+                        var isColorRequest = path.equals("/api/privado/edicoes-cor-consulta");
+                        int count = CALLS.merge(isColorRequest ? "Coloração: " + style : style, 1, Integer::sum);
                         if (style.equals("Corte B") && count == 1) {
                             exchange.getResponseHeaders().set("X-Espelho-Edit-Status", "not-processed");
                             send(exchange, 503, "application/json", new byte[0]);

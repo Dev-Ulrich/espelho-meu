@@ -68,6 +68,25 @@ def main():
             assert analise.status_code == 200, analise.get_json()
             assert area in analise.get_json()
             print(f"Consultoria privada de {area}: acesso público bloqueado e análise autenticada aprovada.")
+        respostas = {
+            "jornada": "cabelo", "quer_cor": "sim", "tecnica_cor": "global",
+            "cor": "fantasia", "base_cor": "escura", "subtom": "frio",
+        }
+        for _ in range(2):
+            for pergunta in caminho(respostas):
+                preencher(respostas, pergunta)
+        analise = client.post("/api/privado/cabelo/analisar", headers=headers,
+            data={"respostas": json.dumps(respostas)})
+        assert analise.status_code == 200, analise.get_json()
+        assert analise.get_json()["cabelo"]["opcoes_cor"] == [
+            {"id": "cor-1", "nome": "Violeta", "tecnica": "Coloração global"},
+            {"id": "cor-2", "nome": "Rosa framboesa", "tecnica": "Coloração global"},
+        ]
+        respostas["quer_cor"] = "nao"
+        analise = client.post("/api/privado/cabelo/analisar", headers=headers,
+            data={"respostas": json.dumps(respostas)})
+        assert analise.status_code == 200, analise.get_json()
+        assert analise.get_json()["cabelo"]["opcoes_cor"] == []
         assert client.get("/api/privado/edicoes-consulta/status").status_code == 403
         assert client.get("/api/privado/edicoes-consulta/status", headers=headers).status_code == 200
 
@@ -127,7 +146,17 @@ def verificar_simulacao(chave):
 
         assert enviar(client, "cabelo", "Coque com textura").data == jpeg
         assert enviar(client, "maquiagem", "Acabamento luminoso").data == jpeg
-        cabelo, maquiagem = editar.call_args_list
+        rota_cor = "/api/privado/edicoes-cor-consulta"
+        assert client.post(rota_cor).status_code == 403
+        colorida = client.post(rota_cor, headers=headers,
+            data={"estilo": "Violeta. Técnica de coloração: Luzes", "foto": (BytesIO(entrada), "teste.png")})
+        assert colorida.status_code == 200 and colorida.data == jpeg
+        cabelo, maquiagem, cor = editar.call_args_list
+        prompt_cor = cor.kwargs["data"]["prompt"]
+        assert "Violeta" in prompt_cor and "Luzes" in prompt_cor
+        assert "Altere somente a cor dos fios" in prompt_cor
+        assert "Preserve corte, penteado" in prompt_cor
+        assert "Preserve a cor original" not in prompt_cor
         assert cabelo.args == ("https://api.openai.com/v1/images/edits",)
         instrucoes = cabelo.kwargs["data"]
         assert instrucoes["model"] == "gpt-image-2.6-sunburst"
