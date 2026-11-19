@@ -10,9 +10,6 @@ export function SiteLayout({ access = false }: { access?: boolean }) {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  useEffect(() => {
-    document.documentElement.toggleAttribute('data-reduced-motion', sessionStorage.getItem('espelho-reduced-motion') === 'true');
-  }, []);
 
   return (
     <>

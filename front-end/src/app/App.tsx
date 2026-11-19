@@ -3,7 +3,9 @@ import { SiteLayout } from '../components/layout/SiteLayout';
 import { AreaEditorialPage } from '../pages/home/AreaEditorialPage';
 import { HomePage } from '../pages/home/HomePage';
 import { AccessPage } from '../pages/acesso/AccessPage';
-import { UserHomePage } from '../pages/authenticated/UserHomePage';
+import { AccountPage } from '../pages/conta/AccountPage';
+import { FeedbackProvider } from '../components/ui/Feedback';
+import { LibraryProvider } from '../pages/conta/LibraryProvider';
 import { GuidedConsultationPage } from '../pages/consultoria/GuidedConsultationPage';
 import { ConsultationStartPage } from '../pages/consultoria/ConsultationStartPage';
 import { AboutPage, ContactPage, MemberPage, TeamPage } from '../pages/institucional/InstitutionalPages';
@@ -13,7 +15,7 @@ import { paths } from './paths';
 import { RequireSession, SessionProvider } from './session';
 
 export function App() {
-  return <SessionProvider><Routes>
+  return <SessionProvider><FeedbackProvider><LibraryProvider><Routes>
     <Route element={<SiteLayout />}>
       <Route index element={<HomePage />} />
       <Route path={paths.sobre} element={<AboutPage />} />
@@ -24,7 +26,7 @@ export function App() {
       <Route path={paths.cabelo} element={<AreaEditorialPage area="cabelo" />} />
       <Route path={paths.maquiagem} element={<AreaEditorialPage area="maquiagem" />} />
       <Route element={<RequireSession />}>
-        <Route path={paths.conta} element={<UserHomePage />} />
+        <Route path={paths.conta} element={<AccountPage />} />
         <Route path={paths.consultoria} element={<ConsultationStartPage />} />
         <Route path="/consultoria/maquiagem" element={<Navigate to="/consultoria/maquiagem/perfil" replace />} />
         <Route path="/consultoria/maquiagem/:etapa" element={<GuidedConsultationPage key="maquiagem" area="maquiagem" />} />
@@ -40,5 +42,5 @@ export function App() {
       <Route path={paths.cadastro} element={<AccessPage key="cadastro" mode="cadastro" />} />
     </Route>
     <Route path="*" element={<Navigate to={paths.home} replace />} />
-  </Routes></SessionProvider>;
+  </Routes></LibraryProvider></FeedbackProvider></SessionProvider>;
 }

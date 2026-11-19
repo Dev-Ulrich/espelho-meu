@@ -1,3 +1,4 @@
+import { CompareStyles } from '../consultoria/CompareStyles';
 import { areas, type EditorialArea } from './editorialContent';
 import { ConsultationLinks } from './HomePage';
 
@@ -25,6 +26,22 @@ export function AreaEditorialPage({ area }: { area: EditorialArea }) {
           <p>{example.description}</p>
         </li>)}
       </ul>
+    </section>
+    <section className="editorial-container editorial-section">
+      <CompareStyles key={area} area={area} items={content.examples.map((example, index) => ({
+        id: `${area}-${index}`, name: example.title, image: example.photo,
+        details: area === 'cabelo' ? {
+          Efeito: example.description,
+          Textura: ['Lisa ou alisada', 'Cacheada', 'Ondulada'][index],
+          Comprimento: ['Curto', 'Curto', 'Médio'][index],
+          Manutenção: ['Aparar para manter a base', 'Finalizar para definir cachos', 'Finalizar para destacar camadas'][index],
+        } : {
+          Efeito: example.description,
+          Acabamento: ['Luminoso', 'Natural', 'Destaque nos lábios'][index],
+          Cobertura: ['Leve a média', 'Leve', 'Adaptável à preferência'][index],
+          Ocasião: ['Dia ou noite', 'Dia a dia', 'Eventos ou uso diário'][index],
+        },
+      }))} />
     </section>
     <section className="editorial-invite editorial-invite--rose">
       <div className="editorial-container">

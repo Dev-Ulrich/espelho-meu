@@ -30,3 +30,8 @@
 .member-info { display: grid; gap: .75rem; font: 1rem/1.6 Lato, system-ui, sans-serif; }
 .member-links { display: flex; flex-wrap: wrap; gap: 1rem; }
 .member-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--purple); text-decoration: underline; text-underline-offset: 4px; font: 700 1rem/1.5 Lato, system-ui, sans-serif; }
+.project-pitch { display: grid; gap: 28px; }
+.project-pitch > div { max-width: 700px; }
+.project-pitch h2 { color: var(--petrol); font: 600 clamp(2.2rem, 4vw, 3.4rem)/1.1 var(--heading-font); margin-bottom: 16px; }
+.project-pitch video { width: 100%; aspect-ratio: 16/9; background: #243c46; border-radius: 24px; box-shadow: 0 20px 60px #243c4615; }
+.project-pitch figcaption { margin-top: 12px; color: var(--purple); font: .875rem/1.5 Lato, sans-serif; }

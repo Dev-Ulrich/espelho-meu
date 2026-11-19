@@ -43,6 +43,16 @@ export function AboutPage() {
       </div>
       <img src={editorialPhotos.waves} alt="Retrato com cabelo ondulado, franja e camadas" loading="lazy" />
     </section>
+    <section className="editorial-container editorial-section project-pitch" aria-labelledby="pitch-title">
+      <div><p className="editorial-kicker">A ideia por trás do espelho</p>
+        <h2 id="pitch-title">Conheça o projeto em quatro minutos.</h2>
+        <p>Assista ao nosso vídeo pitch e descubra a proposta do Espelho Meu, a experiência de consultoria e o trabalho da equipe.</p>
+      </div>
+      <figure><video controls playsInline preload="none" poster={editorialPhotos.cover} aria-label="Vídeo pitch do projeto Espelho Meu">
+        <source src="/media/espelho-meu-pitch.mp4" type="video/mp4" />
+        Seu navegador não suporta este vídeo. <a href="/media/espelho-meu-pitch.mp4">Abrir o vídeo pitch</a>
+      </video><figcaption>Espelho Meu · Vídeo pitch completo · 4 min</figcaption></figure>
+    </section>
     <section className="editorial-invite editorial-invite--rose">
       <div className="editorial-container">
         <h2>Um projeto da FIAP</h2>
