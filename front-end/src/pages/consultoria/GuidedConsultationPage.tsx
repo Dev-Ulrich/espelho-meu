@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
 import { PrivateApiError, privateApi } from '../../services/api/privateApi';
 import { PhotoSimulation } from './PhotoSimulation';
 import styles from '../authenticated/workspace.module.css';
+import guided from './guidedConsultation.module.css';
 
 type Answer = string | string[];
 type Cut = { id: string; nome: string; motivo: string; como_pedir: string; observacoes: string[]; penteados: string[] };
@@ -44,6 +45,9 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const steps = area === 'cabelo' ? hairSteps : makeupSteps;
   const { etapa } = useParams();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const editing = search.get('editar') === '1';
+  const heading = useRef<HTMLHeadingElement>(null);
   const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
@@ -63,32 +67,55 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   }, [area, attempt]);
 
   const index = steps.findIndex(step => step.id === etapa);
-  if (index < 0) return <Navigate to={base + '/perfil'} replace />;
   const active = questions.filter(question => {
     if (area === 'cabelo' && (question.id === 'tom' || question.id === 'subtom') && answers.quer_cor !== 'sim') return false;
     return Object.entries(question.quando ?? {}).every(([key, values]) => values.includes(String(answers[key])));
   });
-  const fields = active.filter(question => (steps[index].fields as readonly string[]).includes(question.id));
+  const sections = steps.map(step => active.filter(question => step.fields.includes(question.id)));
+  const fields = sections[index] ?? [];
   const missing = (question: ConsultationQuestion) => !question.multipla && !answers[question.id];
   const needsPhoto = answers.formato_manual === 'foto';
-  const firstMissing = steps.findIndex(step => active.some(question =>
-    (step.fields as readonly string[]).includes(question.id) && (missing(question)
-      || (question.id === 'formato_manual' && needsPhoto && !photo))));
-  if (questions.length && (index > firstMissing && firstMissing >= 0)) {
-    return <Navigate to={base + '/' + steps[firstMissing].id} replace />;
+  const incomplete = (question: ConsultationQuestion) => missing(question)
+    || (question.id === 'formato_manual' && needsPhoto && !photo);
+  const ordered = sections.flat();
+  const firstMissing = ordered.find(incomplete);
+  const stepFor = (question: ConsultationQuestion) => sections.findIndex(section => section.includes(question));
+  const questionUrl = (question: ConsultationQuestion, edit = false) =>
+    `${base}/${steps[stepFor(question)].id}?pergunta=${encodeURIComponent(question.id)}${edit ? '&editar=1' : ''}`;
+  const requested = fields.find(question => question.id === search.get('pergunta'));
+  const question = requested ?? fields[0];
+  const position = question ? ordered.indexOf(question) : -1;
+
+  useEffect(() => {
+    heading.current?.focus({ preventScroll: true });
+  }, [etapa, question?.id, sending]);
+
+  if (index < 0) return <Navigate to={base + '/perfil'} replace />;
+  if (firstMissing && (index > stepFor(firstMissing) ||
+    (!editing && question && position > ordered.indexOf(firstMissing)))) {
+    return <Navigate to={questionUrl(firstMissing)} replace />;
   }
   if (questions.length && index === 4 && !result) return <Navigate to={base + '/revisao'} replace />;
+
+  function updateAnswer(id: string, value: Answer) {
+    setAnswers(previous => ({ ...previous, [id]: value }));
+    if (id === 'formato_manual' && value !== 'foto') setPhoto(undefined);
+    setResult(undefined);
+    setError('');
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (sending) return;
     setError('');
-    if (fields.some(missing) || (index === 0 && needsPhoto && !photo)) {
-      setError('Complete os campos desta etapa antes de continuar.');
+    if (question && incomplete(question)) {
+      setError(question.id === 'formato_manual' && needsPhoto ? 'Selecione uma foto ou escolha o formato manualmente.' : 'Selecione uma opção para continuar.');
       return;
     }
     if (index < 3) {
-      navigate(base + '/' + steps[index + 1].id);
+      const next = question ? ordered[position + 1] : ordered.find(item => stepFor(item) > index);
+      const destination = editing ? firstMissing : next;
+      navigate(destination ? questionUrl(destination) : base + '/revisao');
       return;
     }
     const payload = new FormData();
@@ -112,15 +139,19 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     }
   }
 
-  return <section className={styles.page}>
-    <h1 className={styles.title}>Consultoria de {area}</h1>
-    <ol className={styles.nav} aria-label="Etapas da consultoria">{steps.map((step, position) =>
-      <li key={step.id}><span aria-current={position === index ? 'step' : undefined}>{position + 1}. {step.label}</span></li>)}</ol>
-    {loading ? <p role="status">{retrying ? 'A consultoria está iniciando. Tentando carregar novamente…' : 'Carregando questionário…'}</p> : questions.length === 0 ?
+  const areaLabel = area === 'cabelo' ? 'Cabelo' : 'Maquiagem';
+  const previous = ordered[position - 1];
+
+  return <section className={`${styles.page} ${guided.page}`}>
+    {loading || sending ? <div role="status" className={guided.loading}>
+      <span className={guided.spinner} aria-hidden="true" />
+      <h1 className={styles.title}>{sending ? 'Estamos preparando suas recomendações' : 'Carregando questionário'}</h1>
+      {retrying && !sending && <p>A consultoria está iniciando. Tentando carregar novamente…</p>}
+    </div> : questions.length === 0 ?
       <div className={styles.panel}><p role="alert">{error || 'Questionário indisponível.'}</p>
         <button className="action-link action-link--outline" onClick={() => { setLoading(true); setRetrying(false); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
       : index === 4 && result ? <div className={styles.panel}>
-        <h2 className={styles.title}>Suas recomendações</h2>
+        <h1 ref={heading} tabIndex={-1} className={styles.title}>Suas recomendações</h1>
         {result.facial.formato && <p>Formato facial de referência: {result.facial.formato}</p>}
         {result.facial.avisos.map(warning => <p key={warning}>{warning}</p>)}
         {result.cabelo && <>
@@ -145,61 +176,74 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
         </div>}
         {simulationStyle && <PhotoSimulation key={simulationStyle} area={area} style={simulationStyle} />}
         <Link className="action-link action-link--outline" to={base + '/revisao'}>Rever respostas</Link>
-      </div> : <form className={styles.panel} onSubmit={submit}>
-        <h2 className={styles.title}>{steps[index].label}</h2>
-        <fieldset className={styles.stack} disabled={sending}>
-          {fields.map(q => q.multipla ? <fieldset key={q.id} className={styles.options}>
-            <legend>{q.titulo}</legend><small>{q.ajuda}</small>
-            {q.opcoes.map(([id, label]) => <label key={id}><input type="checkbox"
-              checked={(answers[q.id] as string[] | undefined)?.includes(id) ?? false}
-              onChange={event => {
-                const checked = event.currentTarget.checked;
-                const values = (answers[q.id] as string[] | undefined) ?? [];
-                setAnswers(previous => ({ ...previous, [q.id]: checked ? [...values, id] : values.filter(value => value !== id) }));
-                setResult(undefined);
-              }} />{label}</label>)}
-          </fieldset> : <label key={q.id} className={styles.field}>{q.titulo}
-            <select value={String(answers[q.id] ?? '')} required onChange={event => {
-              const value = event.currentTarget.value;
-              setAnswers(previous => ({ ...previous, [q.id]: value }));
-              if (q.id === 'formato_manual' && value !== 'foto') setPhoto(undefined);
-              setResult(undefined);
-            }}>
-              <option value="">Selecione uma opção</option>
-              {q.opcoes.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-            </select>
-            {q.ajuda && <small>{q.ajuda}</small>}
-            {q.descricoes?.[String(answers[q.id])] && <small>{q.descricoes[String(answers[q.id])]}</small>}
-          </label>)}
-          {index === 0 && needsPhoto && <label className={styles.field}>Foto para análise facial
+      </div> : index === 3 ? <form className={guided.review} onSubmit={submit}>
+        <p className={guided.eyebrow}>Revisão · Antes de enviar</p>
+        <h1 ref={heading} tabIndex={-1} className={styles.title}>Confira suas escolhas</h1>
+        <p>Você pode editar qualquer resposta antes de gerar suas recomendações.</p>
+        <dl className={guided.answers}>{ordered.map(q => {
+          const value = answers[q.id];
+          const selected = Array.isArray(value) ? value : [value];
+          return <div key={q.id} className={guided.answer}>
+            <dt>{q.titulo}</dt>
+            <dd>{q.opcoes.filter(([id]) => selected.includes(id)).map(([, label]) => label).join(', ') || 'Sem exigências'}</dd>
+            <dd><Link className="action-link action-link--outline" aria-label={`Editar resposta: ${q.titulo}`}
+              to={questionUrl(q, true)} onClick={() => setError('')}>Editar</Link></dd>
+          </div>;
+        })}</dl>
+        {error && <p className={styles.error} role="alert">{error}</p>}
+        {error && needsPhoto && <Link className="action-link action-link--outline" to={base + '/perfil?pergunta=formato_manual'}
+          onClick={() => updateAnswer('formato_manual', '')}>Escolher o formato do rosto</Link>}
+        <div className={guided.reviewActions}>
+          <button className="action-link action-link--primary">Enviar e ver recomendações →</button>
+          <Link className="action-link action-link--outline" to={ordered.length ? questionUrl(ordered[ordered.length - 1]) : '/consultoria'}
+            onClick={() => setError('')}>Voltar às perguntas</Link>
+        </div>
+      </form> : <>
+        <p className={guided.eyebrow}>{areaLabel} · Uma escolha de cada vez</p>
+        <progress className={guided.progress} max={Math.max(ordered.length, 1)} value={Math.max(position + 1, 0)} aria-label="Progresso da consultoria" />
+        <p className={guided.progressNote}>O percurso se adapta às suas escolhas.</p>
+        <form className={`${styles.panel} ${guided.question}`} onSubmit={submit}>
+          <h1 ref={heading} tabIndex={-1} id="consultation-question" className={styles.title}>{question?.titulo ?? steps[index].label}</h1>
+          {question && <fieldset className={guided.options} aria-labelledby="consultation-question">
+            {question.ajuda && <p>{question.ajuda}</p>}
+            {question.opcoes.map(([id, label]) => {
+              const value = answers[question.id];
+              const selected = Array.isArray(value) ? value : [];
+              const description = question.descricoes?.[id];
+              return <label className={guided.option} key={id}>
+                <input type={question.multipla ? 'checkbox' : 'radio'} name={question.id} value={id}
+                  checked={question.multipla ? selected.includes(id) : value === id}
+                  onChange={event => updateAnswer(question.id, question.multipla
+                    ? event.currentTarget.checked ? [...selected, id] : selected.filter(item => item !== id)
+                    : id)} />
+                <span>{label}{description && <small>{description}</small>}</span>
+              </label>;
+            })}
+          </fieldset>}
+          {question?.id === 'formato_manual' && needsPhoto && <label className={`${styles.field} ${guided.photo}`}>
+            Foto para análise facial
+            <small>De frente, sem filtros e com boa luz. Se preferir, escolha o formato manualmente.</small>
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
               const file = event.currentTarget.files?.[0];
               setResult(undefined);
               if (file && (file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) {
-                setPhoto(undefined); event.currentTarget.value = ''; setError('Selecione uma foto JPG, PNG ou WebP de até 5 MB.');
-              } else { setPhoto(file); setError(''); }
+                setPhoto(undefined);
+                event.currentTarget.value = '';
+                setError('Selecione uma foto JPG, PNG ou WebP de até 5 MB.');
+              } else {
+                setPhoto(file);
+                setError('');
+              }
             }} />
             <small>{photo ? `Foto selecionada: ${photo.name}` : 'A foto será enviada para estimar o formato facial quando você confirmar a revisão.'}</small>
           </label>}
-          {index === 3 && <dl>{active.map(q => {
-            const selected = Array.isArray(answers[q.id]) ? answers[q.id] : [answers[q.id]];
-            return <div key={q.id} className={styles.answer}><dt>{q.titulo}</dt>
-              <dd>{q.opcoes.filter(([id]) => selected.includes(id)).map(([, label]) => label).join(', ') || 'Sem exigências'}</dd></div>;
-          })}</dl>}
-        </fieldset>
-        {error && <p className={styles.error} role="alert">{error}</p>}
-        {error && index === 3 && needsPhoto && <Link className="action-link action-link--outline" to={base + '/perfil'}
-          onClick={() => {
-            setAnswers(previous => ({ ...previous, formato_manual: '' }));
-            setPhoto(undefined);
-            setError('');
-          }}>Escolher o formato do rosto</Link>}
-        <div className={styles.actions}>
-          {index > 0 && <Link className="action-link action-link--outline" to={base + '/' + steps[index - 1].id}>Voltar</Link>}
-          <button className="action-link action-link--primary" disabled={sending}>
-            {sending ? 'Analisando…' : index === 3 ? 'Gerar recomendações' : 'Continuar'}
-          </button>
-        </div>
-      </form>}
+          {error && <p className={styles.error} role="alert">{error}</p>}
+          <div className={guided.actions}>
+            <Link className="action-link action-link--outline" onClick={() => setError('')}
+              to={editing ? base + '/revisao' : previous ? questionUrl(previous) : '/consultoria'}>← Voltar</Link>
+            <button className="action-link action-link--primary">{editing ? 'Voltar à revisão' : 'Continuar →'}</button>
+          </div>
+        </form>
+      </>}
   </section>;
 }
