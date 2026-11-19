@@ -108,7 +108,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     (!editing && question && position > ordered.indexOf(firstMissing)))) {
     return <Navigate to={questionUrl(firstMissing)} replace />;
   }
-  if (questions.length && index === 4) return <Navigate to={base + '/revisao'} replace />;
+  if (questions.length && index === 4 && !result && !resultId) return <Navigate to={base + '/revisao'} replace />;
 
   function updateAnswer(id: string, value: Answer) {
     setAnswers(previous => ({ ...previous, [id]: value }));
@@ -191,6 +191,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     </div> : questions.length === 0 ?
       <div className={styles.panel}><p role="alert">{error || 'Questionário indisponível.'}</p>
         <button className="action-link action-link--outline" onClick={() => { setLoading(true); setRetrying(false); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
+      : index === 4 && result ? <GuidedResults result={result} area={area} />
       : index === 3 ? <form className={guided.review} onSubmit={submit}>
         <p className={guided.eyebrow}>Revisão · Antes de enviar</p>
         <h1 ref={heading} tabIndex={-1} className={styles.title}>Confira suas escolhas</h1>
