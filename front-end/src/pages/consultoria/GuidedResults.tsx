@@ -28,7 +28,15 @@ function RecommendedProducts({ products }: { products: ProductGroups }) {
   </section>)}</div>;
 }
 
-export function GuidedResults({ result, area }: { result: ConsultationResult; area: ConsultationArea }) {
+type GuidedResultsProps = {
+  result: ConsultationResult;
+  area: ConsultationArea;
+  answers?: Record<string, string | string[]>;
+  resultId?: string;
+  fromHistory?: boolean;
+};
+
+export function GuidedResults({ result, area }: GuidedResultsProps) {
   const { cabelo, maquiagem, facial } = result;
   const [simulationStyle, setSimulationStyle] = useState('');
   const title = useRef<HTMLHeadingElement>(null);

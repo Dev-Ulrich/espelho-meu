@@ -5,7 +5,7 @@ import { Modal, useToast } from '../../components/ui/Feedback';
 import type { ConsultationArea } from '../../services/api/questionnaire';
 import './experience.css';
 
-export type ComparisonStyle = { id: string; name: string; image: string; details: Record<string, string> };
+export type ComparisonStyle = { id: string; name: string; image: string; details: Partial<Record<string, string>> };
 export function addComparison(selected: string[], id: string) {
   if (selected.includes(id)) return selected.filter(value => value !== id);
   if (selected.length >= 3) throw new Error('Remova um dos 3 estilos para adicionar outro.');
