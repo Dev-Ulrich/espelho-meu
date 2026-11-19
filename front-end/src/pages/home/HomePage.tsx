@@ -36,7 +36,7 @@ const faq = [
 export function HomePage() {
   const { state } = useSession();
   const signedIn = state.status === 'signed-in';
-  const entry = signedIn ? paths.consultoria : paths.cadastro;
+  const entry = signedIn ? paths.consultoria : paths.entrar;
   const routeState = signedIn ? undefined : { from: paths.consultoria };
 
   return <div className="landing-page">
@@ -46,10 +46,11 @@ export function HomePage() {
         <h1 id="home-title">Seu estilo,<br />suas regras.</h1>
         <p>Explore cortes, cores e maquiagem com recomendações que respeitam seus traços, sua rotina e o que faz sentido para você.</p>
         <div className="landing-hero__actions">
-          <Link className="action-link action-link--primary" to={entry} state={routeState}>Começar consultoria →</Link>
-          {!signedIn && <Link className="action-link action-link--outline" to={paths.entrar} state={routeState}>Já tenho conta</Link>}
+          <Link className="action-link action-link--primary" to={entry} state={routeState}>Começar consultoria</Link>
+          {!signedIn && <Link className="action-link action-link--outline" to={paths.cadastro} state={routeState}>Criar minha conta</Link>}
         </div>
-        {!signedIn && <small>Crie sua conta para começar. Você escolhe o ritmo.</small>}
+        <a className="landing-discover" href="#como-funciona">Conheça como funciona</a>
+        {!signedIn && <small>Entre para começar. Ainda não tem conta? O cadastro está na próxima tela.</small>}
       </div>
       <figure>
         <div className="landing-portraits">
@@ -83,12 +84,13 @@ export function HomePage() {
     </section>
     <section className="landing-section" aria-labelledby="landing-faq">
       <h2 id="landing-faq">Antes de começar</h2>
-      <dl className="landing-faq">{faq.map(([question, answer]) => <div key={question}><dt>{question}</dt><dd>{answer}</dd></div>)}</dl>
+      <div className="landing-faq">{faq.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div>
+      <Link className="text-link" to={paths.faq}>Ver todas as perguntas frequentes</Link>
     </section>
     <section className="landing-banner" aria-labelledby="landing-banner-title">
       <h2 id="landing-banner-title">Pronto para descobrir novas possibilidades?</h2>
-      {signedIn ? <ActionLink to={entry}>Começar consultoria →</ActionLink> :
-        <Link className="action-link action-link--primary" to={entry} state={routeState}>Começar consultoria →</Link>}
+      {signedIn ? <ActionLink to={entry}>Começar consultoria</ActionLink> :
+        <Link className="action-link action-link--primary" to={entry} state={routeState}>Começar consultoria</Link>}
     </section>
   </div>;
 }

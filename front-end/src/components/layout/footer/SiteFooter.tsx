@@ -24,13 +24,13 @@ export function SiteFooter({ compact = false }: { compact?: boolean }) {
             <Link to={paths.cadastro}>Criar conta</Link>
           </>}
         </nav>
-        {signedIn && <nav aria-label="Sobre o projeto">
+        <nav aria-label="Sobre o projeto">
           <h2>Projeto</h2>
           <Link to={paths.sobre}>Sobre</Link>
           <Link to={paths.integrantes}>Integrantes</Link>
           <Link to={paths.faq}>Perguntas frequentes</Link>
           <Link to={paths.contato}>Contato</Link>
-        </nav>}
+        </nav>
       </div>
       <div className="site-footer__bottom">
         <p>© 2026 Espelho Meu. Todos os direitos reservados.</p>
