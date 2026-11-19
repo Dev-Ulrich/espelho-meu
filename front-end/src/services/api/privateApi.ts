@@ -4,11 +4,12 @@ export class PrivateApiError extends Error {
   }
 }
 
-type Options = { method?: string; body?: FormData | Record<string, unknown>; signal?: AbortSignal };
+type Options = { method?: string; body?: FormData | Record<string, unknown>; signal?: AbortSignal; headers?: HeadersInit };
 
-export async function privateApi<T>(path: string, options: Options = {}): Promise<T> {
+export async function privateResponse(path: string, options: Options = {}): Promise<Response> {
   const { method = 'GET', body, signal } = options;
-  const headers = new Headers({ Accept: 'application/json' });
+  const headers = new Headers(options.headers);
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json');
   if (method !== 'GET') {
     const response = await fetch('/api/java/auth/csrf', { credentials: 'same-origin', cache: 'no-store', signal });
     if (!response.ok) throw new PrivateApiError(response.status, 'Não foi possível validar a solicitação.');
@@ -20,14 +21,20 @@ export async function privateApi<T>(path: string, options: Options = {}): Promis
     method, headers, signal, credentials: 'same-origin', cache: 'no-store',
     body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
   });
-  const data = response.status === 204 ? undefined : await response.json().catch(() => undefined);
   if (!response.ok) {
+    const data = await response.json().catch(() => undefined);
     const detail = data?.detalhe ?? data?.erro ?? data?.mensagem ?? data?.message ?? data?.detalhes;
     throw new PrivateApiError(response.status, typeof detail === 'string' ? detail :
       response.status === 401 ? 'Entre na sua conta ou confira suas credenciais.' :
       response.status === 403 ? 'Você não tem permissão para esta ação.' :
       'Não foi possível concluir a solicitação.');
   }
+  return response;
+}
+
+export async function privateApi<T>(path: string, options: Options = {}): Promise<T> {
+  const response = await privateResponse(path, options);
+  const data = response.status === 204 ? undefined : await response.json().catch(() => undefined);
   if (response.status !== 204 && data === undefined) {
     throw new PrivateApiError(response.status, 'O servidor retornou uma resposta inesperada.');
   }

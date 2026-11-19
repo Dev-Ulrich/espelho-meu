@@ -15,7 +15,7 @@ export function UserHomePage() {
     <div className={styles.panel}>
       <p>Olá, {state.user.nome}.</p><p>{state.user.email}</p>
       <div className={styles.actions}>
-        <ActionLink to="/consultoria/cabelo/perfil">Iniciar consultoria capilar</ActionLink>
+        <ActionLink to="/consultoria">Iniciar consultoria</ActionLink>
         {state.user.role === 'ADMIN' && <ActionLink to="/admin" variant="outline">Painel administrativo</ActionLink>}
         <button className="action-link action-link--outline" disabled={busy} onClick={async () => {
           setBusy(true); setError('');

@@ -3,7 +3,10 @@ import { SiteLayout } from '../components/layout/SiteLayout';
 import { HomePage } from '../pages/home/HomePage';
 import { AccessPage } from '../pages/acesso/AccessPage';
 import { UserHomePage } from '../pages/authenticated/UserHomePage';
-import { HairConsultationPage } from '../pages/consultoria/HairConsultationPage';
+import { GuidedConsultationPage } from '../pages/consultoria/GuidedConsultationPage';
+import { ConsultationStartPage } from '../pages/consultoria/ConsultationStartPage';
+import { AboutPage, ContactPage, MemberPage, TeamPage } from '../pages/institucional/InstitutionalPages';
+import { HelpPage } from '../pages/ajuda/HelpPage';
 import { AdminPage } from '../pages/admin/AdminPage';
 import { paths } from './paths';
 import { RequireSession, SessionProvider } from './session';
@@ -14,10 +17,18 @@ export function App() {
       <Route index element={<HomePage />} />
       <Route element={<RequireSession />}>
         <Route path={paths.conta} element={<UserHomePage />} />
-        <Route path={paths.consultoria} element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
+        <Route path={paths.consultoria} element={<ConsultationStartPage />} />
+        <Route path={paths.sobre} element={<AboutPage />} />
+        <Route path={paths.integrantes} element={<TeamPage />} />
+        <Route path={paths.integrantes + '/:id'} element={<MemberPage />} />
+        <Route path={paths.faq} element={<HelpPage faq />} />
+        <Route path={paths.contato} element={<ContactPage />} />
+        <Route path={paths.maquiagem} element={<Navigate to="/consultoria/maquiagem/perfil" replace />} />
+        <Route path="/consultoria/maquiagem" element={<Navigate to="/consultoria/maquiagem/perfil" replace />} />
+        <Route path="/consultoria/maquiagem/:etapa" element={<GuidedConsultationPage key="maquiagem" area="maquiagem" />} />
         <Route path={paths.cabelo} element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
         <Route path="/consultoria/cabelo" element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
-        <Route path="/consultoria/cabelo/:etapa" element={<HairConsultationPage />} />
+        <Route path="/consultoria/cabelo/:etapa" element={<GuidedConsultationPage key="cabelo" area="cabelo" />} />
       </Route>
       <Route element={<RequireSession admin />}>
         <Route path="/admin/:entidade?" element={<AdminPage />} />

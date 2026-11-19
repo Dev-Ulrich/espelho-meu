@@ -20,7 +20,7 @@ export function AboutPage() {
     <p>O Espelho Meu ajuda pessoas a explorar opções de cabelo e maquiagem antes de mudar o visual. É um projeto da turma 1TDSPW de ADS da FIAP para a Global Solution 2026/2, com o tema CitizenTech.</p>
     <section>
       <h2>Cabelo e maquiagem</h2>
-      <p>Explore as referências do catálogo ou responda a um questionário para receber sugestões considerando suas preferências e sua rotina.</p>
+      <p>Responda a um questionário para receber sugestões considerando suas preferências e sua rotina.</p>
     </section>
     <ActionLink to={paths.consultoria}>Começar consultoria</ActionLink>
   </section>;

@@ -7,7 +7,7 @@ test('questionário capilar protegido durante a inicialização da IA', async t 
   const server = await createServer({ root: fileURLToPath(new URL('..', import.meta.url)), server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
   const originalFetch = globalThis.fetch;
   try {
-    const { loadHairQuestionnaire } = await server.ssrLoadModule('/src/services/api/hairQuestionnaire.ts');
+    const { loadQuestionnaire } = await server.ssrLoadModule('/src/services/api/questionnaire.ts');
     await t.test('refaz o GET autenticado uma vez após HTTP 502', async () => {
       const { signal } = new AbortController();
       const questions = [{ id: 'textura', titulo: 'Curvatura', opcoes: [['liso', 'Liso']], multipla: false }];
@@ -21,7 +21,7 @@ test('questionário capilar protegido durante a inicialização da IA', async t 
         if (++requests === 1) return new Response(null, { status: 502 });
         return Response.json({ perguntas: questions });
       };
-      assert.deepEqual(await loadHairQuestionnaire(signal, () => retries++), questions);
+      assert.deepEqual(await loadQuestionnaire('cabelo', signal, () => retries++), questions);
       assert.equal(requests, 2);
       assert.equal(retries, 1);
     });
@@ -33,7 +33,7 @@ test('questionário capilar protegido durante a inicialização da IA', async t 
           requests++;
           return new Response(null, { status });
         };
-        await assert.rejects(loadHairQuestionnaire(new AbortController().signal, () => {}), { status });
+        await assert.rejects(loadQuestionnaire('cabelo', new AbortController().signal, () => {}), { status });
         assert.equal(requests, expectedRequests);
       }
     });
@@ -46,7 +46,7 @@ test('questionário capilar protegido durante a inicialização da IA', async t 
         controller.abort();
         return new Response(null, { status: 503 });
       };
-      await assert.rejects(loadHairQuestionnaire(controller.signal, () => assert.fail()), { name: 'AbortError' });
+      await assert.rejects(loadQuestionnaire('cabelo', controller.signal, () => assert.fail()), { name: 'AbortError' });
       assert.equal(requests, 1);
     });
   } finally {

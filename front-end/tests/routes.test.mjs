@@ -24,11 +24,11 @@ test('apenas a home e os formulários de acesso renderizam conteúdo público', 
     assert.doesNotMatch(home, /href="\/(maquiagem|catalogo|admin|integrantes)"/);
     assert.match(render('/entrar'), /Acesse sua conta/);
     assert.match(render('/cadastro'), /Data de nascimento/);
-    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/minha-conta', '/admin/produtos']) {
+    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/sobre', '/integrantes/victor', '/faq', '/contato', '/minha-conta', '/admin/produtos']) {
       assert.match(render(path), /Verificando sua sessão/);
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }
-    for (const path of ['/maquiagem', '/catalogo', '/integrantes', '/recuperar-senha']) {
+    for (const path of ['/catalogo', '/recuperar-senha']) {
       assert.equal(render(path), '');
     }
   } finally {

@@ -1,18 +1,20 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
-import { loadHairQuestionnaire, type HairQuestion } from '../../services/api/hairQuestionnaire';
+import { loadQuestionnaire, type ConsultationArea, type ConsultationQuestion } from '../../services/api/questionnaire';
 import { privateApi } from '../../services/api/privateApi';
+import { PhotoSimulation } from './PhotoSimulation';
 import styles from '../authenticated/workspace.module.css';
 
 type Answer = string | string[];
 type Cut = { id: string; nome: string; motivo: string; como_pedir: string; observacoes: string[]; penteados: string[] };
 type Product = { nome: string; preco?: string | null; ajustes: string[] };
+type ProductGroups = Record<string, Product[]>;
 type Result = {
   facial: { formato?: string; avisos: string[] };
-  cabelo: { cortes: Cut[]; coloracao: string; dica_produtos: string; produtos: Record<string, Product[]> };
+  maquiagem?: { recomendacao: string; sugestao_modelo?: string | null; aplicacao: string; pele_dica: string; produtos: ProductGroups; dica_produtos: string };
+  cabelo?: { cortes: Cut[]; coloracao: string; dica_produtos: string; produtos: ProductGroups };
 };
-const base = '/consultoria/cabelo';
-const steps = [
+const hairSteps = [
   { id: 'perfil', label: 'Perfil capilar', fields: ['apresentacao', 'textura', 'subtipo', 'espessura', 'volume', 'formato_manual'] },
   { id: 'preferencias', label: 'Preferências', fields: ['comprimento', 'manutencao', 'quer_penteados', 'penteado', 'franja', 'estetica', 'quer_cor', 'tecnica_cor', 'cor', 'base_cor', 'tom', 'subtom'] },
   { id: 'produtos', label: 'Orçamento e produtos', fields: ['orcamento', 'selos'] },
@@ -20,13 +22,33 @@ const steps = [
   { id: 'resultado', label: 'Resultado', fields: [] },
 ];
 
-export function HairConsultationPage() {
+const makeupSteps = [
+  { id: 'perfil', label: 'Perfil da pele', fields: ['tipo_pele', 'sensibilidade', 'tom', 'subtom'] },
+  { id: 'preferencias', label: 'Preferências', fields: ['ocasiao', 'acabamento', 'cobertura'] },
+  { id: 'produtos', label: 'Orçamento e produtos', fields: ['produto', 'formato_base', 'formato_corretivo', 'formato_po', 'cor_po', 'orcamento', 'selos'] },
+  ...hairSteps.slice(3),
+];
+
+function RecommendedProducts({ products }: { products: ProductGroups }) {
+  return Object.entries(products).map(([category, items]) => <section key={category}>
+    <h4>{category}</h4>
+    {items.length ? <ul>{items.map((product, i) => <li key={i}>
+      {[product.nome, product.preco].filter(Boolean).join(' · ')}
+      {product.ajustes.length > 0 && <p>{product.ajustes.join(' · ')}</p>}
+    </li>)}</ul> : <p>Nenhuma referência compatível com os filtros.</p>}
+  </section>);
+}
+
+export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
+  const base = `/consultoria/${area}`;
+  const steps = area === 'cabelo' ? hairSteps : makeupSteps;
   const { etapa } = useParams();
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<HairQuestion[]>([]);
+  const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
   const [result, setResult] = useState<Result>();
+  const [simulationStyle, setSimulationStyle] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
@@ -34,20 +56,20 @@ export function HairConsultationPage() {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    loadHairQuestionnaire(controller.signal, () => setRetrying(true))
+    loadQuestionnaire(area, controller.signal, () => setRetrying(true))
       .then(data => { if (!controller.signal.aborted) { setQuestions(data); setLoading(false); } })
       .catch(cause => { if (!controller.signal.aborted) { setError(cause.message); setLoading(false); } });
     return () => controller.abort();
-  }, [attempt]);
+  }, [area, attempt]);
 
   const index = steps.findIndex(step => step.id === etapa);
   if (index < 0) return <Navigate to={base + '/perfil'} replace />;
   const active = questions.filter(question => {
-    if ((question.id === 'tom' || question.id === 'subtom') && answers.quer_cor !== 'sim') return false;
+    if (area === 'cabelo' && (question.id === 'tom' || question.id === 'subtom') && answers.quer_cor !== 'sim') return false;
     return Object.entries(question.quando ?? {}).every(([key, values]) => values.includes(String(answers[key])));
   });
   const fields = active.filter(question => (steps[index].fields as readonly string[]).includes(question.id));
-  const missing = (question: HairQuestion) => !question.multipla && !answers[question.id];
+  const missing = (question: ConsultationQuestion) => !question.multipla && !answers[question.id];
   const needsPhoto = answers.formato_manual === 'foto';
   const firstMissing = steps.findIndex(step => active.some(question =>
     (step.fields as readonly string[]).includes(question.id) && (missing(question)
@@ -75,7 +97,10 @@ export function HairConsultationPage() {
     if (needsPhoto && photo) payload.set('foto', photo);
     setSending(true);
     try {
-      setResult(await privateApi<Result>('/consultoria/cabelo', { method: 'POST', body: payload }));
+      const recommendations = await privateApi<Result>(base, { method: 'POST', body: payload });
+      if (!recommendations[area]) throw new Error('A consultoria retornou um resultado incompleto.');
+      setResult(recommendations);
+      setSimulationStyle('');
       navigate(base + '/resultado');
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível analisar o questionário.');
@@ -85,7 +110,7 @@ export function HairConsultationPage() {
   }
 
   return <section className={styles.page}>
-    <h1 className={styles.title}>Consultoria de cabelo</h1>
+    <h1 className={styles.title}>Consultoria de {area}</h1>
     <ol className={styles.nav} aria-label="Etapas da consultoria">{steps.map((step, position) =>
       <li key={step.id}><span aria-current={position === index ? 'step' : undefined}>{position + 1}. {step.label}</span></li>)}</ol>
     {loading ? <p role="status">{retrying ? 'A consultoria está iniciando. Tentando carregar novamente…' : 'Carregando questionário…'}</p> : questions.length === 0 ?
@@ -95,19 +120,27 @@ export function HairConsultationPage() {
         <h2 className={styles.title}>Suas recomendações</h2>
         {result.facial.formato && <p>Formato facial de referência: {result.facial.formato}</p>}
         {result.facial.avisos.map(warning => <p key={warning}>{warning}</p>)}
-        <div className={styles.grid}>{result.cabelo.cortes.map(cut => <article className={styles.item} key={cut.id}>
-          <h3>{cut.nome}</h3><p>{cut.motivo}</p><p>{cut.como_pedir}</p>
-          {[...cut.observacoes, ...cut.penteados].map((text, i) => <p key={i}>{text}</p>)}
-        </article>)}</div>
-        {!result.cabelo.cortes.length && <p>Nenhum corte correspondeu às respostas. Revise suas preferências.</p>}
-        <div className={styles.panel}><h3>Coloração e cuidados</h3><p>{result.cabelo.coloracao}</p><p>{result.cabelo.dica_produtos}</p>
-          {Object.entries(result.cabelo.produtos).map(([category, products]) => <section key={category}>
-            <h4>{category}</h4>
-            {products.length ? <ul>{products.map((product, i) => <li key={i}>{[product.nome, product.preco].filter(Boolean).join(' · ')}
-                {product.ajustes.length > 0 && <p>{product.ajustes.join(' · ')}</p>}</li>)}</ul>
-              : <p>Nenhuma referência compatível com os filtros.</p>}
-          </section>)}
-        </div>
+        {result.cabelo && <>
+          <div className={styles.grid}>{result.cabelo.cortes.map(cut => <article className={styles.item} key={cut.id}>
+            <h3>{cut.nome}</h3><p>{cut.motivo}</p><p>{cut.como_pedir}</p>
+            {[...cut.observacoes, ...cut.penteados].map((text, i) => <p key={i}>{text}</p>)}
+            <button type="button" className="action-link action-link--outline" onClick={() => setSimulationStyle(cut.nome)}>Simular este corte</button>
+          </article>)}</div>
+          {!result.cabelo.cortes.length && <p>Nenhum corte correspondeu às respostas. Revise suas preferências.</p>}
+          <div className={styles.panel}><h3>Coloração e cuidados</h3><p>{result.cabelo.coloracao}</p><p>{result.cabelo.dica_produtos}</p>
+            <RecommendedProducts products={result.cabelo.produtos} />
+          </div>
+        </>}
+        {result.maquiagem && <div className={styles.panel}>
+          <h3>{result.maquiagem.recomendacao}</h3>
+          {result.maquiagem.sugestao_modelo && <p>Outra sugestão: {result.maquiagem.sugestao_modelo}</p>}
+          <p>{result.maquiagem.aplicacao}</p><p>{result.maquiagem.pele_dica}</p>
+          <button type="button" className="action-link action-link--outline"
+            onClick={() => setSimulationStyle(result.maquiagem?.recomendacao ?? '')}>Simular este acabamento</button>
+          <h3>Produtos e tonalidade</h3><p>{result.maquiagem.dica_produtos}</p>
+          <RecommendedProducts products={result.maquiagem.produtos} />
+        </div>}
+        {simulationStyle && <PhotoSimulation key={simulationStyle} area={area} style={simulationStyle} />}
         <Link className="action-link action-link--outline" to={base + '/revisao'}>Rever respostas</Link>
       </div> : <form className={styles.panel} onSubmit={submit}>
         <h2 className={styles.title}>{steps[index].label}</h2>

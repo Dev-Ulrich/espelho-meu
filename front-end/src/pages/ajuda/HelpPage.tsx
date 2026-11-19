@@ -5,7 +5,7 @@ import './help.css';
 const questions = [
   {
     question: 'Preciso enviar uma foto?',
-    answer: 'Você pode usar os questionários de cabelo e maquiagem sem foto. Uma foto só é necessária para simular uma sugestão sobre a sua imagem.',
+    answer: 'Você pode usar os questionários de cabelo e maquiagem sem foto. Na consultoria capilar, você pode enviar uma foto para estimar o formato do rosto.',
   },
   {
     question: 'Para que serve o questionário?',
@@ -16,12 +16,12 @@ const questions = [
     answer: 'As sugestões dos questionários usam o perfil informado. Os modelos foram treinados com perfis sintéticos e a adequação das sugestões ainda precisa ser validada com pessoas reais.',
   },
   {
-    question: 'Como posso encontrar inspirações de cabelo e maquiagem?',
-    answer: 'Use o catálogo para escolher cortes, maquiagens ou colorações. Você pode abrir os detalhes das referências disponíveis e comparar opções antes de decidir.',
+    question: 'Onde vejo as recomendações de cabelo e maquiagem?',
+    answer: 'Depois de revisar e enviar o questionário, compare as recomendações na página de resultado.',
   },
   {
-    question: 'A simulação mostra meu resultado real?',
-    answer: 'A simulação é uma aproximação visual. As comparações do catálogo usam imagens ilustrativas de referência.',
+    question: 'A análise da foto determina o formato do meu rosto?',
+    answer: 'A análise facial é uma estimativa. Você também pode indicar o formato manualmente e comparar as recomendações.',
   },
 ];
 
@@ -51,8 +51,8 @@ export function HelpPage({ faq = false }: { faq?: boolean }) {
           <li><strong>Enquadramento:</strong> mantenha o rosto visível e de frente, sem cortes na cabeça.</li>
           <li><strong>Posicionamento:</strong> centralize o rosto e mantenha uma distância que permita visualizar o cabelo e os traços claramente.</li>
           <li><strong>Obstruções:</strong> evite acessórios ou objetos que escondam olhos, boca, cabelo ou contorno do rosto.</li>
-          <li><strong>Formatos:</strong> a simulação aceita JPG, PNG ou WebP de até 5 MB.</li>
-          <li><strong>Envio:</strong> a consultoria informa quando a edição de fotos está disponível.</li>
+          <li><strong>Formatos:</strong> a análise facial aceita JPG, PNG ou WebP de até 5 MB.</li>
+          <li><strong>Envio:</strong> a foto é enviada quando você confirma a revisão do questionário.</li>
         </ul>
         <a className="help-page__back-link" href="#perguntas">Voltar às dúvidas frequentes</a>
       </section>

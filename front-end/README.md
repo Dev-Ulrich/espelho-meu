@@ -24,7 +24,9 @@ npm run preview
 
 ## Fluxo autenticado
 
-As entradas públicas são `/`, `/entrar` e `/cadastro`. A conta fica em `/minha-conta` e a consultoria capilar em `/consultoria/cabelo/:etapa`. O painel `/admin` exige a role `ADMIN` e oferece os cadastros de produtos, usuários e cortes. Maquiagem, edição de imagens e recuperação de senha ficam para etapas posteriores.
+As entradas públicas são `/`, `/entrar` e `/cadastro`. A conta fica em `/minha-conta`. Em `/consultoria`, escolha a jornada de cabelo ou maquiagem. Ambas têm etapas de perfil, preferências, produtos, revisão e resultado. A análise facial com foto é opcional na jornada capilar. Sobre, Integrantes, FAQ e Contato ficam no rodapé após o login. O painel `/admin` exige a role `ADMIN` e oferece os cadastros de produtos, usuários e cortes.
+
+A simulação visual aparece no resultado de cada jornada. Seu uso depende da configuração de `OPENAI_API_KEY` e `SIMULACAO_CODIGO` no Flask, além do consentimento para enviar a foto. A recuperação de senha depende de um serviço de envio de e-mails e ainda não está disponível.
 
 O front acessa o Java no mesmo domínio pela rota `/api/java`. O proxy do Vite aponta para `127.0.0.1:8080` e o da Vercel para o serviço Java. A sessão usa cookie HttpOnly, e as requisições de escrita incluem o token obtido em `GET /auth/csrf`. O Flask recebe as chamadas de consultoria somente pelo Java. A [configuração da API Java](../java/README.md) descreve a migração e as variáveis necessárias.
 
@@ -58,8 +60,8 @@ O ZIP `espelho-meu-frontend-v2.zip` da biblioteca ChatGPT não estava acessível
 ## Conferência manual
 
 1. Como visitante, abra diretamente a conta, a consultoria e o painel e confirme o redirecionamento para Entrar.
-2. Cadastre uma conta, entre, recarregue a página e confirme que ela continua autenticada.
-3. Preencha a consultoria capilar com e sem coloração e penteados, revise as respostas e gere o resultado. Para análise facial, use uma foto autorizada.
+2. Cadastre uma conta, entre, recarregue a página e confira a sessão. Abra as páginas Sobre, Integrantes, FAQ e Contato pelo rodapé.
+3. Complete as jornadas de cabelo e maquiagem. Em cabelo, compare as opções com e sem coloração e penteados. Para análise facial, use uma foto autorizada.
 4. Como usuário comum, tente abrir o painel. Como administrador, teste criar, listar, editar e excluir um registro em cada entidade usando dados fictícios.
 5. Confira o layout em 390, 768 e 1440 px e navegue usando Tab, Shift+Tab e Enter.
 
@@ -69,10 +71,10 @@ O ZIP `espelho-meu-frontend-v2.zip` da biblioteca ChatGPT não estava acessível
 | --- | --- |
 | GitHub | [Monorepo Espelho Meu](https://github.com/Dev-Ulrich/espelho-meu) |
 | Vercel | [Site publicado](https://espelho-meu-two.vercel.app/) |
-| API Java | [Consulta de produtos](https://espelhomeu-api.onrender.com/produto) |
+| API Java | [Saúde da API](https://espelho-meu-java.onrender.com/saude) |
 | Vídeo no YouTube | Pendente de publicação |
-| Contato do grupo | Pendente de preenchimento |
+| Contato do grupo | [Issues do projeto](https://github.com/Dev-Ulrich/espelho-meu/issues) |
 
-O ZIP do Portal deve ter até 50 MB. Inclua código, configurações, recursos, README e identificação do grupo; exclua `node_modules`, `.git` e `dist`. Os assets originais são grandes: conferir o tamanho do ZIP final. Cada integrante registra suas próprias cinco contribuições, após revisão, com pelo menos quinze commits no total conforme os critérios da disciplina. Esta preparação deixa as mudanças locais, **sem commit, push, branch nova ou PR**.
+O ZIP do Portal deve ter até 50 MB. Inclua código, configurações, recursos, README e identificação do grupo; exclua `node_modules`, `.git` e `dist`. Os assets originais são grandes: conferir o tamanho do ZIP final. Cada integrante registra suas próprias cinco contribuições, após revisão, com pelo menos quinze commits no total conforme os critérios da disciplina.
 
 [Voltar ao índice](../README.md)

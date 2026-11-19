@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { fetchConsultation, type Journey } from '../../services/api/consultation';
+import { type Journey } from '../../services/api/consultation';
+import { privateApi, privateResponse } from '../../services/api/privateApi';
+import './consultation.css';
 
 export function PhotoSimulation({ area, style }: { area: Journey; style: string }) {
+  const endpoint = `/consultoria/${area}/simulacao`;
   const [availability, setAvailability] = useState<'checking' | 'ready' | 'off' | 'error'>('checking');
   const [busy, setBusy] = useState(false);
   const [picture, setPicture] = useState<Blob | null>(null);
@@ -11,10 +14,8 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchConsultation('/api/simulacoes/status', { signal: controller.signal })
-      .then(async response => {
-        if (!response.ok) throw new Error();
-        const value = await response.json();
+    privateApi<{ disponivel: boolean }>(endpoint, { signal: controller.signal })
+      .then(value => {
         if (!controller.signal.aborted) setAvailability(value.disponivel === true ? 'ready' : 'off');
       })
       .catch(() => { if (!controller.signal.aborted) setAvailability('error'); });
@@ -22,7 +23,7 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
       controller.abort();
       request.current?.abort();
     };
-  }, []);
+  }, [endpoint]);
 
   useEffect(() => {
     if (!picture) return;
@@ -59,13 +60,9 @@ export function PhotoSimulation({ area, style }: { area: Journey; style: string 
     setImageUrl('');
     setPicture(null);
     try {
-      const response = await fetchConsultation(`/api/simulacoes/${area}`, {
-        method: 'POST', headers: { 'X-Simulacao-Codigo': code }, body: data, signal: controller.signal,
+      const response = await privateResponse(endpoint, {
+        method: 'POST', headers: { Accept: 'image/jpeg, application/json', 'X-Simulacao-Codigo': code }, body: data, signal: controller.signal,
       });
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.erro || 'Não foi possível simular a foto.');
-      }
       const blob = await response.blob();
       if (blob.type !== 'image/jpeg') throw new Error('O serviço retornou um resultado inesperado.');
       if (!controller.signal.aborted) setPicture(blob);
