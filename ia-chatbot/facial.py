@@ -76,7 +76,7 @@ def extrair(arquivo):
     try:
         from mediapipe import Image as MpImage, ImageFormat, tasks
     except (ImportError, OSError) as erro:
-        raise RuntimeError("Instale as dependências de requirements-demo.txt no ambiente virtual.") from erro
+        raise RuntimeError("Não foi possível carregar o MediaPipe/OpenCV. Verifique requirements.txt e as bibliotecas nativas do servidor.") from erro
     opcoes = tasks.vision.FaceLandmarkerOptions(
         base_options=tasks.BaseOptions(model_asset_path=str(ASSET)), num_faces=2,
     )

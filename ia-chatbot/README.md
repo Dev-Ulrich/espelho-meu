@@ -43,4 +43,4 @@ Os notebooks incluem as métricas por classe e as matrizes de confusão. Para re
 
 A API Java chama `/api/privado/cabelo/questionario` e `/api/privado/cabelo/analisar` com a mesma `ESPELHO_IA_INTERNAL_KEY` configurada nos dois serviços. Para executar a demo antiga somente em desenvolvimento local, inicie o Flask com `ESPELHO_DEMO_LOCAL=1`.
 
-Para análise de formato facial em Linux, o MediaPipe precisa de EGL e GLES. A imagem do [Dockerfile](Dockerfile) inclui os pacotes `libegl1` e `libgles2` e executa o verificador durante o build.
+Para análise de formato facial em Linux, o MediaPipe precisa de EGL e GLES, e o OpenCV precisa de GL e GLib. A imagem do [Dockerfile](Dockerfile) inclui `libegl1`, `libgles2`, `libgl1` e `libglib2.0-0` e executa o verificador com o detector real durante o build.
