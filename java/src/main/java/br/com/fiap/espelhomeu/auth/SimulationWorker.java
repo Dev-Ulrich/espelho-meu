@@ -56,9 +56,12 @@ class SimulationWorker {
         parts.add("foto", new ByteArrayResource(job.photo()) {
             @Override public String getFilename() { return "foto"; }
         });
+        boolean color = job.area().equals("cabelo") && ComparisonCards.isHairColor(job.key().cardId());
+        var editRequest = color
+                ? flask.post().uri("/api/privado/edicoes-cor-consulta")
+                : flask.post().uri("/api/privado/edicoes-consulta/{area}", job.area());
         try {
-            return flask.post().uri("/api/privado/edicoes-consulta/{area}", job.area())
-                    .contentType(MediaType.MULTIPART_FORM_DATA).body(parts).exchange((request, response) -> {
+            return editRequest.contentType(MediaType.MULTIPART_FORM_DATA).body(parts).exchange((request, response) -> {
                         if (response.getStatusCode().is2xxSuccessful()
                                 && MediaType.IMAGE_JPEG.isCompatibleWith(response.getHeaders().getContentType())) {
                             var jpeg = response.getBody().readNBytes(JPEG_LIMIT + 1);
@@ -68,7 +71,8 @@ class SimulationWorker {
                             }
                         }
                         boolean rejected = "not-processed".equals(
-                                response.getHeaders().getFirst("X-Espelho-Edit-Status"));
+                                response.getHeaders().getFirst("X-Espelho-Edit-Status"))
+                                || (color && response.getStatusCode().value() == 404);
                         return new Outcome(rejected ? State.RETRYABLE : State.UNCERTAIN, null);
                     });
         } catch (RestClientException ex) {

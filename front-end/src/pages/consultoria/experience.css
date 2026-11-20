@@ -14,7 +14,8 @@
 .comparison-table caption { text-align: left; color: #655d68; padding: 0 8px 16px; }
 .comparison-table th, .comparison-table td { padding: 12px; text-align: center; min-width: 150px; vertical-align: top; }
 .comparison-table th:first-child { text-align: left; color: var(--petrol); }
-.comparison-table thead img { width: 160px; height: 120px; object-fit: cover; border-radius: 14px; margin: auto auto 8px; }
+.comparison-table thead img { width: min(160px, 100%); height: auto; border-radius: 14px; margin: 8px auto 0; }
+.comparison-table thead a { display: block; margin-block-start: 8px; }
 .comparison-table tbody tr:nth-child(odd) { background: #f2eae5; }
 .comparison-table tbody th { border-radius: 10px 0 0 10px; }
 .comparison-table tbody td:last-child { border-radius: 0 10px 10px 0; }
@@ -44,4 +45,10 @@
 
 .comparison-simulation { display: grid; gap: 8px; justify-items: start; }
 .comparison-simulation .photo-simulation { width: 100%; }
+.comparison-preview-button { display: grid; width: 100%; justify-items: center; gap: .4rem; color: var(--purple); cursor: zoom-in; }
+.comparison-preview-button span { display: inline-flex; align-items: center; gap: .4rem; text-decoration: underline; }
+.simulation-viewer { position: fixed; inset: 0; margin: auto; width: min(1200px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 12px; overflow: auto; border: 1px solid var(--line); border-radius: 16px; color: var(--ink); background: var(--ivory); }
+.simulation-viewer::backdrop { background: #18212cbb; }
+.simulation-viewer header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px 8px; text-align: left; }
+.simulation-viewer img { display: block; width: 100%; height: calc(100dvh - 104px); object-fit: contain; }
 .comparison-preview { display: block; width: 100%; max-width: 280px; height: auto; margin-inline: auto; border-radius: 12px; }

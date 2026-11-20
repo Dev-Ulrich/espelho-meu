@@ -89,7 +89,7 @@ def penteados(respostas, corte):
 
 def coloracao(respostas):
     if respostas["quer_cor"] == "nao":
-        return "Manter a cor atual."
+        return "Manter a cor atual.", []
     subtom = respostas["subtom"]
     familia = respostas["cor"]
     if familia == "sugerir":
@@ -102,7 +102,12 @@ def coloracao(respostas):
         "escura": "Em base escura, cores claras podem aparecer como reflexo sutil.",
         "colorida": "A cor anterior pode alterar o resultado. Compare em uma mecha.",
     }[base]
-    return f"{rotulo('tecnica_cor', respostas['tecnica_cor'])} em {' ou '.join(paleta)}. {contexto}"
+    tecnica = rotulo("tecnica_cor", respostas["tecnica_cor"])
+    opcoes = [
+        {"id": f"cor-{indice}", "nome": nome, "tecnica": tecnica}
+        for indice, nome in enumerate(paleta, start=1)
+    ]
+    return f"{tecnica} em {' ou '.join(paleta)}. {contexto}", opcoes
 
 
 def cabelo(respostas, formato):
@@ -129,6 +134,7 @@ def cabelo(respostas, formato):
         finalizador += ". Comece com pouca quantidade para evitar pesar."
     elif espessura == "grosso" or subtipo == "c":
         finalizador += ". Aplique em pequenas seções para distribuir melhor."
+    descricao_cor, opcoes_cor = coloracao(respostas)
     return {
         "cortes": cortes,
         "recomendacao": cortes[0]["nome"] if cortes else "Nenhum corte atende aos filtros.",
@@ -137,7 +143,8 @@ def cabelo(respostas, formato):
             LABELS.get(formato, "Rosto sem formato definido"),
             rotulo("estetica", respostas["estetica"]),
         ]),
-        "coloracao": coloracao(respostas),
+        "coloracao": descricao_cor,
+        "opcoes_cor": opcoes_cor,
         "dica_produtos": finalizador,
         "produtos": {nome: selecionar(respostas, categoria) for categoria, nome in CABELO_CATEGORIAS.items()},
     }

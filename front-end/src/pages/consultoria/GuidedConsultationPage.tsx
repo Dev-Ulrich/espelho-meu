@@ -51,6 +51,8 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   const [questions, setQuestions] = useState<ConsultationQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [photo, setPhoto] = useState<File>();
+  const consultationPhoto = useRef<{ id: string; file: File } | undefined>(undefined);
+  const [result, setResult] = useState<ConsultationResult>();
   const pendingResult = useRef<AbortController | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -101,13 +103,14 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     heading.current?.focus();
   }, [etapa, question?.id, sending]);
 
-  if (resultId) return <ConsultationResultView key={resultId} id={resultId} area={area} />;
+  if (resultId) return <ConsultationResultView key={resultId} id={resultId} area={area}
+    photo={consultationPhoto.current?.id === resultId ? consultationPhoto.current?.file : undefined} />;
   if (index < 0) return <Navigate to={base + '/perfil'} replace />;
   if (firstMissing && (index > stepFor(firstMissing) ||
     (!editing && question && position > ordered.indexOf(firstMissing)))) {
     return <Navigate to={questionUrl(firstMissing)} replace />;
   }
-  if (questions.length && index === 4) return <Navigate to={base + '/revisao'} replace />;
+  if (questions.length && index === 4 && !result && !resultId) return <Navigate to={base + '/revisao'} replace />;
 
   function updateAnswer(id: string, value: Answer) {
     setAnswers(previous => ({ ...previous, [id]: value }));
@@ -140,20 +143,26 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
       const recommendations = await privateApi<ConsultationResult>(base, { method: 'POST', body: payload, signal: request.signal });
       if (request.signal.aborted) return;
       const id = recommendations.consulta_id;
-      if (!recommendations[area] || !id) throw new Error('A consultoria retornou um resultado incompleto.');
-      try {
-        update(value => ({
-          ...value,
-          records: upsertConsultation(value.records, {
-            id, area, title: recommendations.cabelo?.cortes[0]?.nome
-              ?? recommendations.maquiagem?.recomendacao ?? 'Consultoria capilar',
-            date: new Date().toISOString(), favorite: false, result: recommendations, answers,
-          }),
-        }));
-      } catch {
-        toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
+      if (!recommendations[area]) throw new Error('A consultoria retornou um resultado incompleto.');
+      if (id) {
+        try {
+          update(value => ({
+            ...value,
+            records: upsertConsultation(value.records, {
+              id, area, title: recommendations.cabelo?.cortes[0]?.nome
+                ?? recommendations.maquiagem?.recomendacao ?? 'Consultoria capilar',
+              date: new Date().toISOString(), favorite: false, result: recommendations, answers,
+            }),
+          }));
+        } catch {
+          toast({ title: 'Atalho do histórico indisponível', message: 'Você pode reabrir a consulta pelo endereço do resultado.' });
+        }
+        consultationPhoto.current = needsPhoto && photo ? { id, file: photo } : undefined;
+        navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
+      } else {
+        setResult(recommendations);
+        navigate(`${base}/resultado`);
       }
-      navigate(`${base}/resultado?consulta=${encodeURIComponent(id)}`);
     } catch (cause) {
       if (request.signal.aborted) return;
       const unavailable = cause instanceof PrivateApiError && [502, 503, 504].includes(cause.status);
@@ -185,6 +194,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
     </div> : questions.length === 0 ?
       <div className={styles.panel}><p role="alert">{error || 'Questionário indisponível.'}</p>
         <button className="action-link action-link--outline" onClick={() => { setLoading(true); setRetrying(false); setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button></div>
+      : index === 4 && result ? <GuidedResults result={result} area={area} />
       : index === 3 ? <form className={guided.review} onSubmit={submit}>
         <p className={guided.eyebrow}>Revisão · Antes de enviar</p>
         <h1 ref={heading} tabIndex={-1} className={styles.title}>Confira suas escolhas</h1>
@@ -270,7 +280,7 @@ export function GuidedConsultationPage({ area }: { area: ConsultationArea }) {
   </section>;
 }
 
-function ConsultationResultView({ area, id }: { area: ConsultationArea; id: string }) {
+function ConsultationResultView({ area, id, photo }: { area: ConsultationArea; id: string; photo?: File }) {
   const [result, setResult] = useState<ConsultationResult>();
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -285,7 +295,7 @@ function ConsultationResultView({ area, id }: { area: ConsultationArea; id: stri
   }, [area, id, attempt]);
 
   return <section className={`${styles.page} ${guided.page}`}>
-    {result ? <GuidedResults result={result} area={area} /> : error ? <div className={styles.panel}>
+    {result ? <GuidedResults result={result} area={area} photo={photo} /> : error ? <div className={styles.panel}>
       <p role="alert">{error}</p>
       <button type="button" className="action-link action-link--outline"
         onClick={() => { setError(''); setAttempt(value => value + 1); }}>Tentar novamente</button>

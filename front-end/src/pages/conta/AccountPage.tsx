@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
-import { UserRound, Heart, History, SlidersHorizontal, Settings, LogOut, ChevronRight, Star, Scissors, Sparkles, Home } from 'lucide-react';
+import { UserRound, Heart, History, SlidersHorizontal, Settings, LogOut, ChevronRight, Star, Scissors, Sparkles, Home, ShieldCheck } from 'lucide-react';
 import { useSession } from '../../app/session';
 import { Modal, useToast } from '../../components/ui/Feedback';
 import { useLibrary } from './LibraryProvider';
@@ -57,6 +57,7 @@ export function AccountPage() {
       <Link className="account-brand" to="/">Espelho Meu<span>SEU ESTILO, SUAS REGRAS</span></Link>
       <h1>Minha conta</h1><p>Suas escolhas, consultas e inspirações em um só lugar.</p>
       <nav aria-label="Minha conta">{sections.map(({ id, label, icon: Icon }) => <Link key={id} to={`/minha-conta?secao=${id}`} aria-current={current.id === id ? 'page' : undefined}><Icon size={18} />{label}</Link>)}</nav>
+      {user.role === 'ADMIN' && <nav aria-label="Área administrativa"><Link to="/admin"><ShieldCheck size={18} />Painel administrativo</Link></nav>}
       <button type="button" onClick={signOut} disabled={busy}><LogOut size={18} />{busy ? 'Saindo…' : 'Sair'}</button>
     </aside>
     <section className="account-main">

@@ -109,9 +109,13 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
         privada = request.path.startswith("/api/privado/")
         return jsonify(disponivel=bool(chave_openai and (privada or codigo_demo)))
 
+    @app.post("/api/privado/edicoes-cor-consulta")
+    def simular_cor():
+        return simular("cabelo", colorir=True)
+
     @app.post("/api/simulacoes/<area>")
     @app.post("/api/privado/edicoes-consulta/<area>")
-    def simular(area):
+    def simular(area, *, colorir=False):
         privada = request.path.startswith("/api/privado/")
         if area not in CAMPOS:
             return rejeitar_edicao("Área desconhecida.", 404)
@@ -139,7 +143,7 @@ def create_app(pasta_modelos=RAIZ / "modelos", *, modo_teste=False):
             return rejeitar_edicao(str(erro), 422)
 
         try:
-            imagem = editar_foto(foto, tamanho, area, estilo, chave_openai, modelo_imagem)
+            imagem = editar_foto(foto, tamanho, area, estilo, chave_openai, modelo_imagem, colorir=colorir)
         except requests.ConnectTimeout:
             return rejeitar_edicao("O serviço de edição está temporariamente indisponível.", 503)
         except requests.Timeout:

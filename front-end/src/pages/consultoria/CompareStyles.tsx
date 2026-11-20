@@ -4,15 +4,16 @@ import { Link } from 'react-router';
 import { Modal, useToast } from '../../components/ui/Feedback';
 import type { ConsultationArea } from '../../services/api/questionnaire';
 import { CardPreview, PhotoSimulation, useSimulationProgress } from './PhotoSimulation';
+import { HaircutReference } from './HaircutReference';
 import './experience.css';
 
-export type ComparisonStyle = { id: string; name: string; image: string; details: Partial<Record<string, string>> };
+export type ComparisonStyle = { id: string; name: string; image?: string; referenceCut?: boolean; details: Partial<Record<string, string>> };
 export function addComparison(selected: string[], id: string) {
   if (selected.includes(id)) return selected.filter(value => value !== id);
   if (selected.length >= 3) throw new Error('Remova um dos 3 estilos para adicionar outro.');
   return [...selected, id];
 }
-export function CompareStyles({ items, area, resultId }: { items: ComparisonStyle[]; area: ConsultationArea; resultId?: string }) {
+export function CompareStyles({ items, area, resultId, photo }: { items: ComparisonStyle[]; area: ConsultationArea; resultId?: string; photo?: File }) {
   const limit = Math.min(3, items.length);
   const storageKey = resultId && `espelho-meu:comparacao:${resultId}`;
   const endpoint = resultId && `/consultoria/${area}/resultados/${resultId}/simulacoes`;
@@ -46,7 +47,8 @@ export function CompareStyles({ items, area, resultId }: { items: ComparisonStyl
       <button type="button" className="action-link action-link--primary" disabled={!chosen.length} onClick={() => setOpen(true)}>Comparar ({chosen.length}/{limit})</button>
     </div>
     <div className="comparison-options">{items.map(item => <button type="button" key={item.id} className="comparison-option" aria-pressed={selected.includes(item.id)} onClick={() => toggle(item.id)}>
-      <img src={item.image} alt="" loading="lazy" /><strong>{item.name}</strong><span>{selected.includes(item.id) ? 'Selecionado · remover' : 'Adicionar à comparação'}</span>
+      {item.image && <img src={item.image} alt="" loading="lazy" />}
+      <span>{item.details.Tipo}</span><strong>{item.name}</strong><span>{selected.includes(item.id) ? 'Selecionado · remover' : 'Adicionar à comparação'}</span>
     </button>)}</div>
     {open && <Modal title="Compare seus estilos" wide onClose={() => setOpen(false)}>
       <p className="experience-eyebrow">{area === 'cabelo' ? 'Consultoria capilar' : 'Consultoria de maquiagem'} · {chosen.length} de {limit}</p>
@@ -54,13 +56,17 @@ export function CompareStyles({ items, area, resultId }: { items: ComparisonStyl
         {progress && <p>Prévias usadas ou reservadas nesta consulta · {progress.used}/{progress.limit}</p>}
         {error && <p role="alert">{error}</p>}
         {showSimulation && chosen.length ? <PhotoSimulation endpoint={endpoint} selected={selected}
-          progress={progress} onAccepted={apply} />
+          progress={progress} onAccepted={apply} initialPhoto={photo} />
           : <button type="button" className="action-link action-link--primary" disabled={!chosen.length}
               onClick={() => setShowSimulation(true)}>Simular na minha foto</button>}
       </div>}
       {chosen.length ? <div className="comparison-scroll" tabIndex={0} role="region" aria-label="Tabela de comparação; deslize horizontalmente em telas pequenas">
-        <table className="comparison-table"><caption>Referências ilustrativas para comparar suas opções</caption>
-          <thead><tr><th scope="col">Características</th>{chosen.map(item => <th scope="col" key={item.id}><img src={item.image} alt="" /><span>{item.name}</span></th>)}</tr></thead>
+        <table className="comparison-table"><caption>Compare as referências e as simulações de cada opção</caption>
+          <thead><tr><th scope="col">Características</th>{chosen.map(item => <th scope="col" key={item.id}>
+            <span>{item.name}</span>
+            {item.referenceCut ? <HaircutReference id={item.id} name={item.name} />
+              : item.image && <img src={item.image} alt="" />}
+          </th>)}</tr></thead>
           <tbody>{endpoint && (showSimulation || chosen.some(item => previewStates.has(item.id))) && <tr>
             <th scope="row">Na minha foto</th>{chosen.map(item => <td key={item.id}>
               <CardPreview endpoint={endpoint} id={item.id} name={item.name} state={previewStates.get(item.id)} />

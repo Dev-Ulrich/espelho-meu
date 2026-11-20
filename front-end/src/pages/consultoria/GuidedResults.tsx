@@ -1,20 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import type { ConsultationArea } from '../../services/api/questionnaire';
-import hairPortrait from '../../assets/figma/consultoria-cabelo.webp';
 import makeupPortrait from '../../assets/figma/consultoria-maquiagem.webp';
 import { CompareStyles, type ComparisonStyle } from './CompareStyles';
+import { haircutImage, HaircutReference } from './HaircutReference';
 import styles from '../authenticated/workspace.module.css';
 import guided from './guidedConsultation.module.css';
 
 type Cut = { id: string; nome: string; motivo: string; como_pedir: string; observacoes: string[]; penteados: string[] };
+type HairColor = { id: string; nome: string; tecnica: string };
 type Product = { nome: string; preco?: string | null; atributos?: string[]; ajustes: string[]; url?: string };
 type ProductGroups = Record<string, Product[]>;
 export type ConsultationResult = {
   consulta_id?: string;
   facial: { formato?: string | null; avisos: string[]; origem?: 'foto' | 'manual'; dica?: string | null };
   maquiagem?: { recomendacao: string; sugestao_modelo?: string | null; aplicacao: string; pele_dica: string; produtos: ProductGroups; dica_produtos: string };
-  cabelo?: { cortes: Cut[]; coloracao: string; dica_produtos: string; produtos: ProductGroups };
+  cabelo?: { cortes: Cut[]; coloracao: string; opcoes_cor?: HairColor[]; dica_produtos: string; produtos: ProductGroups };
 };
 
 function buildComparisonStyles(result: ConsultationResult, area: ConsultationArea): ComparisonStyle[] {
@@ -22,7 +23,8 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
     const cutItems = result.cabelo.cortes.map(cut => ({
       id: cut.id,
       name: cut.nome,
-      image: hairPortrait,
+      image: haircutImage(cut.id),
+      referenceCut: true,
       details: {
         Tipo: 'Corte',
         Motivo: cut.motivo,
@@ -35,7 +37,6 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
     const hairstyles = result.cabelo.cortes.flatMap(cut => cut.penteados.map((name, index) => ({
       id: `penteado-${cut.id}-${index}`,
       name,
-      image: hairPortrait,
       details: {
         Tipo: 'Penteado',
         'Corte base': cut.nome,
@@ -44,7 +45,13 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
       },
     })));
 
-    return [...cutItems, ...hairstyles].filter((item, index, items) =>
+    const colors = (result.cabelo.opcoes_cor ?? []).map(color => ({
+      id: color.id,
+      name: color.nome,
+      details: { Tipo: 'Coloração', Técnica: color.tecnica },
+    }));
+
+    return [...colors, ...cutItems, ...hairstyles].filter((item, index, items) =>
       items.findIndex(other => other.name === item.name) === index);
   }
 
@@ -95,9 +102,10 @@ function RecommendedProducts({ products }: { products: ProductGroups }) {
 type GuidedResultsProps = {
   result: ConsultationResult;
   area: ConsultationArea;
+  photo?: File;
 };
 
-export function GuidedResults({ result, area }: GuidedResultsProps) {
+export function GuidedResults({ result, area, photo }: GuidedResultsProps) {
   const { cabelo, maquiagem, facial } = result;
   const title = useRef<HTMLHeadingElement>(null);
   const leadCut = cabelo?.cortes[0];
@@ -112,10 +120,10 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
       <h1 ref={title} tabIndex={-1} className={styles.title}>Seu próximo visual começa aqui.</h1>
       <p>Explore possibilidades, entenda cada indicação e escolha o que combina com você.</p>
     </header>
-    {lead && <article className={guided.resultLead}>
-      <img src={area === 'cabelo' ? hairPortrait : makeupPortrait} alt="" />
+    {lead && <article className={leadCut && !haircutImage(leadCut.id) ? guided.resultCard : guided.resultLead}>
+      {leadCut ? <HaircutReference id={leadCut.id} name={leadCut.nome} /> : <img src={makeupPortrait} alt="" />}
       <div><h2>{lead}</h2><p>{leadCut?.motivo ?? maquiagem?.aplicacao}</p>
-        <small>Retrato ilustrativo. A simulação usa a foto que você enviar.</small>
+        <small>A simulação usa a sua foto.</small>
       </div>
     </article>}
     {(facial.formato || facial.avisos.length > 0) && <section className={guided.resultCard}>
@@ -127,13 +135,18 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
       {!cabelo.cortes.length && <p role="status" className={guided.resultCard}>Nenhum corte correspondeu às respostas. Revise suas preferências.</p>}
       {cabelo.cortes.map(cut => <article className={guided.resultCard} key={cut.id}>
         <h2>{cut.nome}</h2>
-        {cut !== leadCut && <p>{cut.motivo}</p>}
+        {cut !== leadCut && <>
+          <HaircutReference id={cut.id} name={cut.nome} />
+          <p>{cut.motivo}</p>
+        </>}
         <p>{cut.como_pedir}</p>
         {cut.observacoes.map((value, index) => <p key={index}>{value}</p>)}
         {!!cut.penteados.length && <div><h3>Penteados</h3><ul>{cut.penteados.map((value, index) => <li key={index}>{value}</li>)}</ul></div>}
       </article>)}
       <section className={guided.resultCard}>
-        <h2>Coloração e cuidados</h2><p>{cabelo.coloracao}</p><p>{cabelo.dica_produtos}</p>
+        <h2>Coloração e cuidados</h2><p>{cabelo.coloracao}</p>
+        {!!cabelo.opcoes_cor?.length && <a className="action-link action-link--outline" href="#comparar-estilos">Escolher uma cor para simular</a>}
+        <p>{cabelo.dica_produtos}</p>
         <RecommendedProducts products={cabelo.produtos} />
       </section>
     </>}
@@ -147,8 +160,8 @@ export function GuidedResults({ result, area }: GuidedResultsProps) {
         <RecommendedProducts products={maquiagem.produtos} />
       </section>
     </>}
-    {comparisonStyles.length > 0 && <div className={guided.resultCard}>
-      <CompareStyles key={result.consulta_id ?? area} area={area} items={comparisonStyles} resultId={result.consulta_id} />
+    {comparisonStyles.length > 0 && <div id="comparar-estilos" className={guided.resultCard}>
+      <CompareStyles key={result.consulta_id ?? area} area={area} items={comparisonStyles} resultId={result.consulta_id} photo={photo} />
     </div>}
     <div className={guided.reviewActions}>
       <Link className="action-link action-link--primary" to={`/consultoria/${area}/revisao`}>Rever minhas preferências</Link>

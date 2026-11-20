@@ -35,12 +35,20 @@ def preparar_foto(arquivo):
     return conteudo.getvalue(), tamanho
 
 
-def editar_foto(foto, tamanho, area, estilo, chave, modelo):
-    regiao = (
-        "Altere somente o cabelo. Preserve a cor original do cabelo."
-        if area == "cabelo"
-        else "Altere somente a maquiagem. Preserve o cabelo e o tom natural da pele."
-    )
+def editar_foto(foto, tamanho, area, estilo, chave, modelo, *, colorir=False):
+    if colorir:
+        regiao = (
+            "Altere somente a cor dos fios, aplicando o tom e a técnica indicados. "
+            "A mudança de cor deve ser claramente visível em relação à foto original. "
+            "Preserve corte, penteado, linha do cabelo, comprimento, volume e textura dos fios. "
+            "Na coloração global, aplique em toda a extensão visível do cabelo. "
+            "Para luzes, distribua mechas finas; para mechas localizadas, mude apenas áreas selecionadas. "
+            "Preserve sobrancelhas, barba e tom de pele."
+        )
+    elif area == "cabelo":
+        regiao = "Altere somente o cabelo. Preserve a cor original do cabelo."
+    else:
+        regiao = "Altere somente a maquiagem. Preserve o cabelo e o tom natural da pele."
     prompt = (
         f"Edite esta foto para mostrar uma simulação realista de {estilo}. {regiao} "
         "Preserve a identidade, o formato e os traços do rosto, a expressão, a idade aparente, "

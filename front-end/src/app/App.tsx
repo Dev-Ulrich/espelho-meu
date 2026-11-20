@@ -33,9 +33,9 @@ export function App() {
         <Route path="/consultoria/cabelo" element={<Navigate to="/consultoria/cabelo/perfil" replace />} />
         <Route path="/consultoria/cabelo/:etapa" element={<GuidedConsultationPage key="cabelo" area="cabelo" />} />
       </Route>
-      <Route element={<RequireSession admin />}>
-        <Route path="/admin/:entidade?" element={<AdminPage />} />
-      </Route>
+    </Route>
+    <Route element={<RequireSession admin />}>
+      <Route path={paths.admin + '/:entidade?'} element={<AdminPage />} />
     </Route>
     <Route element={<SiteLayout access />}>
       <Route path={paths.entrar} element={<AccessPage key="login" mode="login" />} />

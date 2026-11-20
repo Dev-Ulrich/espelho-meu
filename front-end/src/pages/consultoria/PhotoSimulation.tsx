@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { Maximize2, X } from 'lucide-react';
 import { privateApi } from '../../services/api/privateApi';
 import { PhotoPicker } from './PhotoPicker';
 import './consultation.css';
@@ -43,13 +44,14 @@ export function useSimulationProgress(endpoint: string | undefined) {
   return { progress, error, apply };
 }
 
-export function PhotoSimulation({ endpoint, selected, progress, onAccepted }: {
+export function PhotoSimulation({ endpoint, selected, progress, onAccepted, initialPhoto }: {
   endpoint: string;
   selected: string[];
   progress?: Progress;
   onAccepted: (progress: Progress) => void;
+  initialPhoto?: File;
 }) {
-  const [photo, setPhoto] = useState<File>();
+  const [photo, setPhoto] = useState(initialPhoto);
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -116,11 +118,27 @@ export function CardPreview({ endpoint, state, id, name }: {
 }) {
   const [imageError, setImageError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const viewer = useRef<HTMLDialogElement>(null);
+  const title = useId();
+  const src = `/api/java${endpoint}/imagem?card=${encodeURIComponent(id)}&v=${attempt}`;
+  const description = `Simulação aproximada de ${name}`;
   if (state === 'READY') return imageError ? <>
     <p role="alert">Não foi possível carregar a prévia salva.</p>
     <button type="button" className="text-link" onClick={() => { setAttempt(value => value + 1); setImageError(false); }}>Recarregar imagem</button>
-  </> : <img className="comparison-preview" src={`/api/java${endpoint}/imagem?card=${encodeURIComponent(id)}&v=${attempt}`}
-    alt={`Simulação aproximada de ${name}`} onError={() => setImageError(true)} />;
+  </> : <>
+    <button type="button" className="comparison-preview-button" aria-label={`Ampliar simulação de ${name}`}
+      onClick={() => viewer.current?.showModal()}>
+      <img className="comparison-preview" src={src} alt={description} onError={() => setImageError(true)} />
+      <span><Maximize2 size={16} aria-hidden="true" /> Ampliar imagem</span>
+    </button>
+    <dialog ref={viewer} className="simulation-viewer" aria-labelledby={title}>
+      <header>
+        <h3 id={title}>{name}</h3>
+        <button type="button" className="icon-button" aria-label="Fechar imagem ampliada" onClick={() => viewer.current?.close()}><X /></button>
+      </header>
+      <img src={src} alt={description} loading="lazy" />
+    </dialog>
+  </>;
   const label = {
     QUEUED: 'Na fila…',
     RUNNING: 'Gerando prévia…',
