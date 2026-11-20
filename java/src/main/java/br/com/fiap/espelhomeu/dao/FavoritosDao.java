@@ -25,8 +25,8 @@ public class FavoritosDao {
         String sql = "SELECT * FROM T_EM_FAVORITOS";
 
         try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 Favoritos favoritos = new Favoritos();

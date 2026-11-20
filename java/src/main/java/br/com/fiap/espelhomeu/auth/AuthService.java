@@ -1,11 +1,10 @@
 package br.com.fiap.espelhomeu.auth;
 
-import org.springframework.http.HttpStatus;
+import br.com.fiap.espelhomeu.exception.RegraDeNegocioException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -104,7 +103,7 @@ public class AuthService {
         return email.strip().toLowerCase(Locale.ROOT);
     }
 
-    private static ResponseStatusException duplicate() {
-        return new ResponseStatusException(HttpStatus.CONFLICT, "Já existe uma conta com este e-mail.");
+    private static RegraDeNegocioException duplicate() {
+        return new RegraDeNegocioException("Já existe uma conta com este e-mail.");
     }
 }

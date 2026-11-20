@@ -30,8 +30,8 @@ public class PerfilMaquiagemDao {
                 """;
 
         try (Connection conexao = dataSource.getConnection();
-             Statement stmt = conexao.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conexao.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 PerfilMaquiagem perfilMaquiagem = new PerfilMaquiagem();

@@ -27,8 +27,8 @@ public class RecomendacaoPenteadoDao {
         String sql = "SELECT * FROM T_EM_RECOMENDACAO_PENTEADO";
 
         try (Connection conexao = dataSource.getConnection();
-             Statement stmt = conexao.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conexao.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 RecomendacaoPenteado recomendacao = new RecomendacaoPenteado();

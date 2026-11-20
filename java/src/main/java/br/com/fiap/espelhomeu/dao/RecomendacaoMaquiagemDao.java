@@ -28,8 +28,8 @@ public class RecomendacaoMaquiagemDao {
         String sql = "SELECT * FROM T_EM_RECOMENDACAO_MAQUIAGEM";
 
         try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 RecomendacaoMaquiagem recomendacao = new RecomendacaoMaquiagem();
