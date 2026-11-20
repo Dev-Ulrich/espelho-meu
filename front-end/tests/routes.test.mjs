@@ -47,6 +47,15 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
       assert.match(render(path), /Verificando sua sessão/);
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }
+    const { AiHairCatalog } = await server.ssrLoadModule('/src/pages/admin/AiHairCatalog.tsx');
+    const { aiHairCatalog } = await server.ssrLoadModule('/src/pages/admin/hairCatalog.ts');
+    const catalog = render('/admin/cortes', React.createElement(AiHairCatalog)).replaceAll('<!-- -->', '');
+    assert.ok(aiHairCatalog.length > 100);
+    assert.equal(new Set(aiHairCatalog.map(cut => cut.id)).size, aiHairCatalog.length);
+    assert.match(catalog, /<table.*>ID<\/th>.*>Foto<\/th>.*>Nome<\/th>/s);
+    assert.ok(catalog.includes(`${aiHairCatalog.length} de ${aiHairCatalog.length} cortes`));
+    assert.match(catalog, /referencias-cortes\/buzz\.webp/);
+    assert.ok(aiHairCatalog.find(cut => cut.id === 'crew')?.instructions.includes(','));
     assert.doesNotMatch(render('/admin'), /Navegação principal|Já tenho conta/);
     for (const path of ['/catalogo', '/recuperar-senha']) {
       assert.match(render(path), /^<div class="toast-region"[^>]+><\/div>$/);

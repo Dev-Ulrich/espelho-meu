@@ -1,9 +1,12 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link, Navigate, NavLink, useLocation, useNavigate, useParams } from 'react-router';
 import { paths } from '../../app/paths';
 import { useSession } from '../../app/session';
 import { privateApi } from '../../services/api/privateApi';
 import { productCategories } from '../../services/api/productDemo';
+import { AdminTable, type Column } from './AdminTable';
+import { AiHairCatalog } from './AiHairCatalog';
+import { aiHairCatalog } from './hairCatalog';
 import styles from '../authenticated/workspace.module.css';
 
 type Row = { id: number } & Record<string, string | number | null>;
@@ -40,7 +43,7 @@ const entities = {
     { key: 'data', label: 'Data de nascimento', type: 'date' },
     { key: 'telefone', label: 'Telefone', type: 'tel', max: 20, optional: true },
   ] },
-  cortes: { path: '/corte', label: 'Cortes de cabelo', description: 'Cortes, orientações de manutenção e imagens.', fields: [
+  cortes: { path: '/corte', label: 'Cortes de cabelo', description: 'Catálogo de recomendações da IA e cadastros do Oracle.', fields: [
     { key: 'nome', label: 'Nome', max: 40 },
     { key: 'descricao', label: 'Descrição', max: 100 },
     { key: 'informacaoManutencao', label: 'Informações de manutenção', max: 150 },
@@ -84,7 +87,8 @@ function AdminOverview() {
     <div className={styles.grid}>
       {sections.map(key => <Link key={key} className={styles.item} to={paths.admin + '/' + key}>
         <h3>{entities[key].label}</h3>
-        {summary && <p className={styles.metric}>{summary[key]} <span>{summary[key] === 1 ? 'registro' : 'registros'}</span></p>}
+        {key === 'cortes' ? <p className={styles.metric}>{aiHairCatalog.length} <span>cortes na IA</span></p>
+          : summary && <p className={styles.metric}>{summary[key]} <span>{summary[key] === 1 ? 'registro' : 'registros'}</span></p>}
         <p>{entities[key].description}</p>
       </Link>)}
     </div>
@@ -98,10 +102,13 @@ function rowName(row: Row) {
   return String(row.nome ?? row.nomeTonalidade ?? row.linhaProduto ?? 'Registro ' + row.id);
 }
 
+function roleLabel(role: Row['role']) {
+  return role === 'ADMIN' ? 'Administrador' : role === 'USER' ? 'Usuário' : 'Sem credencial';
+}
+
 function rowDetails(entity: EntityKey, row: Row) {
   if (entity === 'usuarios') {
-    const role = row.role === 'ADMIN' ? 'Administrador' : row.role === 'USER' ? 'Usuário' : 'Sem credencial';
-    return [row.email, row.status, role];
+    return [row.email, row.status, roleLabel(row.role)];
   }
   const price = typeof row.precoReferencia === 'number' ? currency.format(row.precoReferencia) : null;
   return [row.marca, row.tipo ?? row.categoria, row.cor, price, row.descricao ?? row.infotmacaoManutencao].filter(Boolean);
@@ -123,7 +130,51 @@ function encodeImage(file: File) {
   });
 }
 
-function EntityCrud({ entity }: { entity: EntityKey }) {
+const extraColumns: Record<EntityKey, readonly Field[]> = {
+  usuarios: [{ key: 'status', label: 'Status' }, { key: 'role', label: 'Acesso' }],
+  produtos: [{ key: 'faixaPreco', label: 'Faixa de preço' }],
+  maquiagem: [{ key: 'faixaPreco', label: 'Faixa de preço' }],
+  cortes: [],
+  penteados: [],
+  cores: [],
+};
+
+function RecordPhoto({ endpoint, name }: { endpoint: string; name: string }) {
+  const element = useRef<HTMLDivElement>(null);
+  const [photo, setPhoto] = useState('');
+  const [label, setLabel] = useState('–');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      privateApi<Row>(endpoint, { signal: controller.signal }).then(row => {
+        if (!controller.signal.aborted && typeof row.imagem === 'string' && row.imagem) setPhoto(imageSource(row.imagem));
+      }).catch(() => { if (!controller.signal.aborted) setLabel('Indisponível'); });
+    });
+    if (element.current) observer.observe(element.current);
+    return () => { observer.disconnect(); controller.abort(); };
+  }, [endpoint]);
+
+  return <div ref={element} className={styles.catalogPhoto}>{photo
+    ? <img src={photo} alt={`Referência de ${name}`} />
+    : label}</div>;
+}
+
+function formatCell(row: Row, field: Field) {
+  const value = row[field.key];
+  if (field.key === 'role') return roleLabel(value);
+  if (value === null || value === undefined || value === '') return '–';
+  if (field.key === 'precoReferencia' && typeof value === 'number') return currency.format(value);
+  if (field.type === 'date' || field.type === 'datetime-local') {
+    const formatted = String(value).slice(0, 10).split('-').reverse().join('/');
+    return field.type === 'datetime-local' ? formatted + ' ' + String(value).slice(11, 16) : formatted;
+  }
+  return value;
+}
+
+function EntityCrud({ entity, title }: { entity: EntityKey; title?: string }) {
   const { label, path, fields }: Entity = entities[entity];
   const hasImage = fields.some(field => field.type === 'file');
   const listPath = entity === 'usuarios' ? '/auth/admin/usuarios' : path + (hasImage ? '?incluirImagem=false' : '');
@@ -211,14 +262,33 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
 
   const query = normalizeSearch(search.trim());
   const filtered = rows?.filter(row =>
-    normalizeSearch([rowName(row), ...rowDetails(entity, row)].join(' ')).includes(query)) ?? [];
+    normalizeSearch([row.id, rowName(row), ...rowDetails(entity, row)].join(' ')).includes(query)) ?? [];
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const activePage = Math.min(page, pages);
   const visibleRows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
   const currentImage = editor && editor !== 'new' && typeof editor.imagem === 'string' ? editor.imagem : '';
 
+  const columns: Column<Row>[] = [{ label: 'ID', cell: row => row.id }];
+  if (hasImage) columns.push({ label: 'Foto', cell: row => <RecordPhoto endpoint={path + '/' + row.id} name={rowName(row)} /> });
+  const nameFields = ['nome', 'nomeTonalidade', 'linhaProduto'];
+  const nameField = fields.find(field => nameFields.includes(field.key));
+  const details = fields.filter(field => field !== nameField && field.type !== 'file');
+  const listFields = nameField ? [nameField, ...details] : details;
+  columns.push(...[...listFields, ...extraColumns[entity]].map(field => ({
+    label: field.label,
+    heading: field === nameField,
+    cell: (row: Row) => formatCell(row, field),
+  })), {
+    label: 'Ações',
+    cell: row => <div className={styles.tableActions}>
+      <button type="button" className={styles.link} disabled={busy || !!target} onClick={() => edit(row)}>Editar</button>
+      {row.role !== 'ADMIN' && <button type="button" className={styles.link} disabled={busy || !!target}
+        onClick={() => { setTarget(row); setError(''); setNotice(''); }}>Excluir</button>}
+    </div>,
+  });
+
   return <section className={styles.panel} aria-busy={busy}>
-    <h2 className={styles.title}>{label}</h2>
+    <h2 className={styles.title}>{title ?? label}</h2>
     {error && <p role="alert" className={styles.error}>{error}</p>}
     {notice && <p role="status">{notice}</p>}
     {editor ? <form onSubmit={save} key={editor === 'new' ? 'new' : editor.id}>
@@ -271,17 +341,7 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
         : filtered.length === 0 ? <p>Nenhum registro encontrado para a busca.</p>
         : <>
           <p role="status" className={styles.adminCount}>{filtered.length} {filtered.length === 1 ? 'registro' : 'registros'}</p>
-          <ul className={styles.grid}>
-            {visibleRows.map(row => <li key={row.id} className={styles.item}>
-              <h3>{rowName(row)}</h3>
-              <p>{rowDetails(entity, row).filter(Boolean).join(' · ')}</p>
-              <div className={styles.actions}>
-                <button type="button" className={styles.link} disabled={busy || !!target} onClick={() => edit(row)}>Editar</button>
-                {row.role !== 'ADMIN' && <button type="button" className={styles.link} disabled={busy || !!target}
-                  onClick={() => { setTarget(row); setError(''); setNotice(''); }}>Excluir</button>}
-              </div>
-            </li>)}
-          </ul>
+          <AdminTable label={title ?? label} columns={columns} rows={visibleRows} />
           {pages > 1 && <nav className={styles.actions} aria-label="Páginas de registros">
             <button type="button" className={styles.link} disabled={busy || !!target || activePage === 1}
               onClick={() => setPage(activePage - 1)}>Anterior</button>
@@ -297,6 +357,20 @@ function EntityCrud({ entity }: { entity: EntityKey }) {
 function imageSource(value: string) {
   const mime = value.startsWith('/9j/') ? 'jpeg' : value.startsWith('UklGR') ? 'webp' : 'png';
   return `data:image/${mime};base64,${value}`;
+}
+
+function HaircutsAdmin() {
+  const { search } = useLocation();
+  const isOracle = new URLSearchParams(search).get('origem') === 'oracle';
+  const route = paths.admin + '/cortes';
+  return <section className={styles.panel}>
+    <h2 className={styles.title}>Cortes de cabelo</h2>
+    <nav className={`${styles.nav} ${styles.adminTabs}`} aria-label="Origem do catálogo de cortes">
+      <Link to={route} aria-current={!isOracle ? 'page' : undefined}>Catálogo da IA</Link>
+      <Link to={route + '?origem=oracle'} aria-current={isOracle ? 'page' : undefined}>Cadastros do Oracle</Link>
+    </nav>
+    {isOracle ? <EntityCrud entity="cortes" title="Cadastros do Oracle" /> : <AiHairCatalog />}
+  </section>;
 }
 
 export function AdminPage() {
@@ -320,29 +394,34 @@ export function AdminPage() {
     }
   }
 
-  return <main className={`${styles.page} ${styles.adminPage}`}>
-    <header className={styles.workspaceHero}>
-      <div><h1 className={styles.title}>Painel administrativo</h1>
-        <p>{state.status === 'signed-in' ? state.user.nome + ' · ' : ''}Administração do Espelho Meu</p></div>
-      <button type="button" className="action-link action-link--outline" onClick={signOut} disabled={signingOut}>
-        {signingOut ? 'Saindo…' : 'Sair'}
-      </button>
-      {signOutError && <p role="alert">{signOutError}</p>}
-    </header>
-    <nav className={`${styles.nav} ${styles.adminTabs}`} aria-label="Cadastros administrativos">
-      <NavLink end to={paths.admin}>Visão geral</NavLink>
-      {Object.entries(entities).map(([key, value]) => <NavLink end key={key} to={paths.admin + '/' + key}>{value.label}</NavLink>)}
-      <NavLink end to={paths.admin + '/imagens'}>Imagens</NavLink>
-    </nav>
-    {isImages ? <section className={styles.panel}>
-      <h2 className={styles.title}>Imagens de referência</h2>
-      <p>Adicione uma foto ao cadastrar um corte, penteado ou uma cor de cabelo. Para trocar uma foto, abra o registro e escolha “Editar”.</p>
-      <div className={styles.actions}>
-        <Link className="action-link action-link--primary" to={paths.admin + '/cortes'}>Imagens de cortes</Link>
-        <Link className="action-link action-link--outline" to={paths.admin + '/penteados'}>Imagens de penteados</Link>
-        <Link className="action-link action-link--outline" to={paths.admin + '/cores'}>Imagens de coloração</Link>
-      </div>
-    </section> : entidade ? <EntityCrud key={entidade} entity={entidade as EntityKey} /> :
-      <AdminOverview />}
-  </main>;
+  return <div className={styles.adminShell}>
+    <aside className={styles.adminSidebar}>
+      <Link className={styles.adminBrand} to={paths.admin}>Espelho Meu</Link>
+      <nav aria-label="Cadastros administrativos">
+        <NavLink end to={paths.admin}>Visão geral</NavLink>
+        {Object.entries(entities).map(([key, value]) => <NavLink end key={key} to={paths.admin + '/' + key}>{value.label}</NavLink>)}
+        <NavLink end to={paths.admin + '/imagens'}>Imagens</NavLink>
+      </nav>
+    </aside>
+    <main className={styles.adminContent}>
+      <header className={styles.adminHeader}>
+        <div><h1 className={styles.title}>Painel administrativo</h1>
+          <p>{state.status === 'signed-in' ? state.user.nome : ''}</p></div>
+        <button type="button" className="action-link action-link--outline" onClick={signOut} disabled={signingOut}>
+          {signingOut ? 'Saindo…' : 'Sair'}
+        </button>
+        {signOutError && <p role="alert">{signOutError}</p>}
+      </header>
+      {isImages ? <section className={styles.panel}>
+        <h2 className={styles.title}>Imagens de referência</h2>
+        <p>Adicione uma foto ao cadastrar um corte, penteado ou uma cor de cabelo. Para trocar uma foto, abra o registro e escolha “Editar”.</p>
+        <div className={styles.actions}>
+          <Link className="action-link action-link--primary" to={paths.admin + '/cortes?origem=oracle'}>Imagens de cortes do Oracle</Link>
+          <Link className="action-link action-link--outline" to={paths.admin + '/penteados'}>Imagens de penteados</Link>
+          <Link className="action-link action-link--outline" to={paths.admin + '/cores'}>Imagens de coloração</Link>
+        </div>
+      </section> : entidade === 'cortes' ? <HaircutsAdmin /> : entidade ? <EntityCrud key={entidade} entity={entidade as EntityKey} /> :
+        <AdminOverview />}
+    </main>
+  </div>;
 }
