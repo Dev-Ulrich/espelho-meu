@@ -43,7 +43,7 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
     const registration = render('/cadastro');
     assert.match(registration, /Faça parte do Espelho Meu/);
     assert.match(registration, /<input(?=[^>]*name="nascimento")(?=[^>]*type="date")/);
-    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/minha-conta', '/admin/produtos', '/admin/penteados', '/admin/imagens']) {
+    for (const path of ['/consultoria', '/consultoria/cabelo/resultado', '/consultoria/maquiagem/perfil', '/minha-conta', '/admin/usuarios', '/admin/produtos', '/admin/penteados', '/admin/cores', '/admin/maquiagem', '/admin/imagens']) {
       assert.match(render(path), /Verificando sua sessão/);
       assert.doesNotMatch(render(path), /Gerar recomendações|Novo registro|Painel administrativo/);
     }

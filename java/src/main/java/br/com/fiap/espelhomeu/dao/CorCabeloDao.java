@@ -20,12 +20,16 @@ public class CorCabeloDao {
     }
 
     public List<CorCabelo> listar() {
+        return listar(true);
+    }
+
+    public List<CorCabelo> listar(boolean incluirImagem) {
         List<CorCabelo> lista = new ArrayList<>();
 
         String sql = """
-                SELECT ID_COR, NM_TONALIDADE, RF_VISUAL, NF_MANUTENCAO
+                SELECT ID_COR, NM_TONALIDADE, NF_MANUTENCAO%s
                 FROM T_EM_COR
-                """;
+                """.formatted(incluirImagem ? ", RF_VISUAL" : "");
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
@@ -36,7 +40,7 @@ public class CorCabeloDao {
 
                 cor.setId(rs.getLong("ID_COR"));
                 cor.setNomeTonalidade(rs.getString("NM_TONALIDADE"));
-                cor.setImagem(rs.getBytes("RF_VISUAL"));
+                if (incluirImagem) cor.setImagem(rs.getBytes("RF_VISUAL"));
                 cor.setInfotmacaoManutencao(rs.getString("NF_MANUTENCAO"));
 
                 lista.add(cor);

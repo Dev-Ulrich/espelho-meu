@@ -27,8 +27,8 @@ public class CorteController {
     }
 
     @GetMapping
-    public List<DetalhesCorte> listar()  {
-        return dao.listar()
+    public List<DetalhesCorte> listar(@RequestParam(defaultValue = "true") boolean incluirImagem) {
+        return dao.listar(incluirImagem)
                 .stream()
                 .map(corte -> mapper.map(corte, DetalhesCorte.class))
                 .toList();

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -24,6 +25,9 @@ public class AuthService {
     }
 
     public record Account(long id, String nome, String email, String role) {}
+    public record AdminUser(long id, String nome, String email, LocalDate data, String telefone,
+                            String status, String role) {}
+
     private record Login(Account account, String hash) {}
 
     @Transactional
@@ -46,6 +50,17 @@ public class AuthService {
             throw duplicate();
         }
         return new Account(id, name, normalized, "USER");
+    }
+
+    public List<AdminUser> listUsers() {
+        return jdbc.query("""
+                SELECT u.ID_USUARIO, u.NM_USUARIO, u.EM_USUARIO, u.DT_NASCIMENTO,
+                       u.TL_USUARIO, u.ST_USUARIO, c.DS_ROLE
+                  FROM T_EM_USUARIO u LEFT JOIN T_EM_CREDENCIAL c ON c.ID_USUARIO = u.ID_USUARIO
+                 ORDER BY u.ID_USUARIO DESC
+                """, (rs, i) -> new AdminUser(rs.getLong("ID_USUARIO"), rs.getString("NM_USUARIO"),
+                rs.getString("EM_USUARIO"), rs.getDate("DT_NASCIMENTO").toLocalDate(),
+                rs.getString("TL_USUARIO"), rs.getString("ST_USUARIO"), rs.getString("DS_ROLE")));
     }
 
     public Optional<Account> authenticate(String email, String password) {
