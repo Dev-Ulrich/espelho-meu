@@ -50,6 +50,11 @@ public class AuthController {
                 .body(auth.register(body.nome(), body.email(), body.dataNascimento(), body.telefone(), body.senha()));
     }
 
+    @GetMapping("/admin/resumo")
+    public ResponseEntity<AuthService.AdminSummary> adminSummary() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(auth.summarizeCatalog());
+    }
+
     @GetMapping("/admin/usuarios")
     public ResponseEntity<List<AuthService.AdminUser>> listUsers() {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(auth.listUsers());

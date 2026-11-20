@@ -28,6 +28,9 @@ public class AuthService {
     public record AdminUser(long id, String nome, String email, LocalDate data, String telefone,
                             String status, String role) {}
 
+    public record AdminSummary(long usuarios, long cortes, long penteados, long cores,
+                               long produtos, long maquiagem) {}
+
     private record Login(Account account, String hash) {}
 
     @Transactional
@@ -50,6 +53,19 @@ public class AuthService {
             throw duplicate();
         }
         return new Account(id, name, normalized, "USER");
+    }
+
+    public AdminSummary summarizeCatalog() {
+        return jdbc.queryForObject("""
+                SELECT (SELECT COUNT(*) FROM T_EM_USUARIO) AS USUARIOS,
+                       (SELECT COUNT(*) FROM T_EM_CORTE) AS CORTES,
+                       (SELECT COUNT(*) FROM T_EM_PENTEADO) AS PENTEADOS,
+                       (SELECT COUNT(*) FROM T_EM_COR) AS CORES,
+                       (SELECT COUNT(*) FROM T_EM_PRODUTO) AS PRODUTOS,
+                       (SELECT COUNT(*) FROM T_EM_MAQUIAGEM) AS MAQUIAGEM
+                FROM DUAL
+                """, (rs, i) -> new AdminSummary(rs.getLong("USUARIOS"), rs.getLong("CORTES"),
+                rs.getLong("PENTEADOS"), rs.getLong("CORES"), rs.getLong("PRODUTOS"), rs.getLong("MAQUIAGEM")));
     }
 
     public List<AdminUser> listUsers() {

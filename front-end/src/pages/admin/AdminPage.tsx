@@ -60,6 +60,37 @@ const entities = {
 } satisfies Record<string, Entity>;
 type EntityKey = keyof typeof entities;
 
+type Summary = Record<EntityKey, number>;
+
+function AdminOverview() {
+  const [summary, setSummary] = useState<Summary>();
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    privateApi<Summary>('/auth/admin/resumo', { signal: controller.signal })
+      .then(data => { if (!controller.signal.aborted) setSummary(data); })
+      .catch(() => { if (!controller.signal.aborted) setError(true); });
+    return () => controller.abort();
+  }, [attempt]);
+
+  const sections: EntityKey[] = ['usuarios', 'cortes', 'penteados', 'cores', 'produtos', 'maquiagem'];
+  return <section aria-labelledby="admin-overview">
+    <h2 id="admin-overview" className={styles.overviewTitle}>Visão geral</h2>
+    {error ? <div className={styles.actions}>
+      <p role="status">Os totais estão indisponíveis.</p>
+      <button type="button" className={styles.link} onClick={() => { setError(false); setAttempt(value => value + 1); }}>Tentar novamente</button>
+    </div> : !summary && <p role="status">Carregando totais…</p>}
+    <div className={styles.grid}>
+      {sections.map(key => <Link key={key} className={styles.item} to={paths.admin + '/' + key}>
+        <h3>{entities[key].label}</h3>
+        {summary && <p className={styles.metric}>{summary[key]} <span>{summary[key] === 1 ? 'registro' : 'registros'}</span></p>}
+        <p>{entities[key].description}</p>
+      </Link>)}
+    </div>
+  </section>;
+}
+
 const pageSize = 12;
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -289,7 +320,7 @@ export function AdminPage() {
     }
   }
 
-  return <section className={styles.page}>
+  return <main className={`${styles.page} ${styles.adminPage}`}>
     <header className={styles.workspaceHero}>
       <div><h1 className={styles.title}>Painel administrativo</h1>
         <p>{state.status === 'signed-in' ? state.user.nome + ' · ' : ''}Administração do Espelho Meu</p></div>
@@ -312,10 +343,6 @@ export function AdminPage() {
         <Link className="action-link action-link--outline" to={paths.admin + '/cores'}>Imagens de coloração</Link>
       </div>
     </section> : entidade ? <EntityCrud key={entidade} entity={entidade as EntityKey} /> :
-      <div className={styles.grid}>
-        {Object.entries(entities).map(([key, value]) => <Link key={key} className={styles.item} to={paths.admin + '/' + key}>
-          <h2>{value.label}</h2><p>{value.description}</p>
-        </Link>)}
-      </div>}
-  </section>;
+      <AdminOverview />}
+  </main>;
 }

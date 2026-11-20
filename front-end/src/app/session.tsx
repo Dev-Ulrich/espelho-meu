@@ -59,8 +59,11 @@ export function RequireSession({ admin = false }: { admin?: boolean }) {
   if (state.status !== 'signed-in') return <Navigate to={paths.entrar}
     state={{ from: location.pathname + location.search }} replace />;
   if (admin && state.user.role !== 'ADMIN') return <section className="notice">
-    <h1>Acesso restrito</h1><p>Esta área exige permissão de administrador.</p>
-    <Link to={paths.conta}>Voltar à minha conta</Link>
+    <h1>Acesso restrito</h1>
+    <p>A API não reconheceu acesso administrativo para a conta {state.user.email}.</p>
+    <button type="button" className="action-link action-link--outline" onClick={retry}>Verificar acesso novamente</button>
+    <Link className="action-link action-link--outline" to={paths.conta}>Voltar à minha conta</Link>
   </section>;
+  if (!admin && state.user.role === 'ADMIN') return <Navigate to={paths.admin} replace />;
   return <Outlet />;
 }
