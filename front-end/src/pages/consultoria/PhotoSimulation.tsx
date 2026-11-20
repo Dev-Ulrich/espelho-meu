@@ -13,7 +13,11 @@ export function useSimulationProgress(endpoint: string | undefined) {
   const revision = useRef(0);
 
   useEffect(() => {
-    if (!endpoint) return;
+    if (!endpoint) {
+      setProgress(undefined);
+      setError('');
+      return;
+    }
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout>;
     async function refresh() {
@@ -71,7 +75,7 @@ export function PhotoSimulation({ endpoint, selected, progress, onAccepted, init
     const controller = new AbortController();
     request.current = controller;
     const data = new FormData();
-    selected.forEach(id => data.append('cards', id));
+    pending.forEach(id => data.append('cards', id));
     data.set('autoriza', 'true');
     if (!progress.photoSaved && photo) data.set('foto', photo);
     setBusy(true);
@@ -89,10 +93,12 @@ export function PhotoSimulation({ endpoint, selected, progress, onAccepted, init
     }
   }
 
+  if (progress && !pending.length && !error) return null;
+
   return <section className="notice photo-simulation" aria-label="Simulação na foto">
     <h3>Simular na minha foto</h3>
     {!progress && <p role="status">Consultando suas prévias…</p>}
-    {progress && remaining === 0 && <p>Todos os espaços de prévia desta consulta foram usados ou reservados.</p>}
+    {progress && remaining === 0 && pending.length > 0 && <p>Todos os espaços de prévia desta consulta foram usados ou reservados.</p>}
     {progress && remaining > 0 && pending.length > remaining && <p role="status">
       Restam {remaining} {remaining === 1 ? 'prévia' : 'prévias'}. Remova da seleção {pending.length - remaining === 1 ? 'uma opção' : 'opções'} sem prévia para continuar.
     </p>}

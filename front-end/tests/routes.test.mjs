@@ -73,6 +73,32 @@ test('home, galerias e páginas institucionais são públicas; consultorias e ad
     assert.match(makeup.replaceAll('<!-- -->', ''), /Comparar \(0\/1\)/);
     assert.doesNotMatch(makeup, /Simular este acabamento/);
     assert.match(makeup, /href="\/consultoria\/maquiagem\/revisao"/);
+    const hairResult = {
+      consulta_id: 'saved-hair-result',
+      facial: { avisos: [] },
+      cabelo: {
+        cortes: [{ id: 'buzz', nome: 'Buzz Cut', motivo: 'Prático', como_pedir: 'Na máquina', observacoes: [], penteados: ['Acobreado'] }],
+        coloracao: 'Escolha uma cor',
+        opcoes_cor: [
+          { id: 'cor-1', nome: 'Acobreado', tecnica: 'Coloração global' },
+          { id: 'cor-2', nome: 'Buzz Cut', tecnica: 'Coloração global' },
+          { id: 'cor-antiga', nome: 'Loiro', tecnica: 'Luzes' },
+        ],
+        dica_produtos: '',
+        produtos: {},
+      },
+    };
+    const hair = render('/consultoria/cabelo/resultado', React.createElement(GuidedResults, {
+      area: 'cabelo', result: hairResult,
+    })).replaceAll('<!-- -->', '');
+    assert.match(hair, /href="#opcoes-coloracao"/);
+    assert.match(hair, /Simular Acobreado/);
+    assert.doesNotMatch(hair, /Simular Buzz Cut|Simular Loiro/);
+    assert.match(hair, /referencias-cortes\/buzz\.webp/);
+    const unsavedHair = render('/consultoria/cabelo/resultado', React.createElement(GuidedResults, {
+      area: 'cabelo', result: { ...hairResult, consulta_id: undefined },
+    }));
+    assert.doesNotMatch(unsavedHair, /opcoes-coloracao|Simular Acobreado/);
   } finally {
     await server.close();
   }

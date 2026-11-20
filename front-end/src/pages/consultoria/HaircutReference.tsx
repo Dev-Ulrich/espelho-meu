@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const illustratedCuts = new Set([
   'afro-assimetrico-curto', 'afro-medio-alto', 'afro-medio-assimetrico', 'afro-medio-redondo',
   'bixie', 'blunt-clavicula', 'bob-cacheado-afunilado', 'bob-curto-camadas', 'bob-empilhado',
@@ -26,12 +28,16 @@ export function haircutImage(id: string): string | undefined {
   return illustratedCuts.has(id) ? `/assets/referencias-cortes/${id}.webp` : undefined;
 }
 
-export function HaircutReference({ id, name }: { id: string; name: string }) {
+export function HaircutReference({ id, name, thumbnail = false }: { id: string; name: string; thumbnail?: boolean }) {
+  const [failedImage, setFailedImage] = useState<string>();
   const image = haircutImage(id);
+  if (image && failedImage !== image) {
+    return <img src={image} alt={thumbnail ? '' : `Referência ilustrativa do corte ${name}`}
+      loading="lazy" onError={() => setFailedImage(image)} />;
+  }
+  if (thumbnail) return null;
   const search = new URLSearchParams({ tbm: 'isch', q: `${name} corte de cabelo` });
-  return image
-    ? <img src={image} alt={`Referência ilustrativa do corte ${name}`} loading="lazy" />
-    : <a className="text-link" href={`https://www.google.com/search?${search}`} target="_blank" rel="noreferrer">
-      Ver fotos de referência
-    </a>;
+  return <a className="text-link" href={`https://www.google.com/search?${search}`} target="_blank" rel="noreferrer">
+    Ver fotos de referência
+  </a>;
 }

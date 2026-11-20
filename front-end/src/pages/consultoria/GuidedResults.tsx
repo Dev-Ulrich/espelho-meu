@@ -23,7 +23,6 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
     const cutItems = result.cabelo.cortes.map(cut => ({
       id: cut.id,
       name: cut.nome,
-      image: haircutImage(cut.id),
       referenceCut: true,
       details: {
         Tipo: 'Corte',
@@ -45,14 +44,18 @@ function buildComparisonStyles(result: ConsultationResult, area: ConsultationAre
       },
     })));
 
-    const colors = (result.cabelo.opcoes_cor ?? []).map(color => ({
-      id: color.id,
-      name: color.nome,
-      details: { Tipo: 'Coloração', Técnica: color.tecnica },
-    }));
+    const colors = (result.cabelo.opcoes_cor ?? [])
+      .filter(color => (color.id === 'cor-1' || color.id === 'cor-2') && color.tecnica.trim())
+      .map(color => ({
+        id: color.id,
+        name: color.nome,
+        details: { Tipo: 'Coloração', Técnica: color.tecnica },
+      }));
 
-    return [...colors, ...cutItems, ...hairstyles].filter((item, index, items) =>
-      items.findIndex(other => other.name === item.name) === index);
+    // Match the order used by the API to keep the same card ID when names repeat.
+    const items = [...cutItems, ...colors, ...hairstyles];
+    return items.filter((item, index) => item.id.trim() && item.name.trim()
+      && items.findIndex(other => other.id.trim() && other.name === item.name) === index);
   }
 
   if (area === 'maquiagem' && result.maquiagem) {
@@ -145,7 +148,8 @@ export function GuidedResults({ result, area, photo }: GuidedResultsProps) {
       </article>)}
       <section className={guided.resultCard}>
         <h2>Coloração e cuidados</h2><p>{cabelo.coloracao}</p>
-        {!!cabelo.opcoes_cor?.length && <a className="action-link action-link--outline" href="#comparar-estilos">Escolher uma cor para simular</a>}
+        {result.consulta_id && comparisonStyles.some(item => item.details.Tipo === 'Coloração') &&
+          <a className="action-link action-link--outline" href="#opcoes-coloracao">Escolher uma cor para simular</a>}
         <p>{cabelo.dica_produtos}</p>
         <RecommendedProducts products={cabelo.produtos} />
       </section>
