@@ -41,7 +41,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.username=sa",
         "spring.datasource.password=teste-local",
         "spring.datasource.driver-class-name=org.h2.Driver",
-        "espelho.simulation.worker-enabled=false"
+        "espelho.simulation.worker-enabled=false",
+        "ESPELHO_JAVA_PREVIEW_ORIGIN=https://espelho-teste.vercel.app"
 })
 class ConsultationSimulationsTest {
     private static final String KEY = "chave-interna-ficticia-para-testes-locais";
@@ -133,6 +134,18 @@ class ConsultationSimulationsTest {
         mvc.perform(get(path + "/imagem").param("card", "a").session(stranger)).andExpect(status().isNotFound());
         mvc.perform(multipart(path).session(stranger).with(csrf()).param("cards", "a"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void onlyAllowsTheConfiguredPreviewOrigin() throws Exception {
+        String path = consult("cabelo") + "/simulacoes";
+        String preview = "https://espelho-teste.vercel.app";
+        mvc.perform(multipart(path).file(new MockMultipartFile("foto", "original.jpg", "image/jpeg", ORIGINAL))
+                        .session(owner).with(csrf()).header("Origin", preview).param("cards", "a").param("autoriza", "true"))
+                .andExpect(status().isAccepted()).andExpect(header().string("Access-Control-Allow-Origin", preview));
+        mvc.perform(multipart(path).session(owner).with(csrf())
+                        .header("Origin", "https://outro-projeto.vercel.app").param("cards", "a"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
