@@ -22,51 +22,62 @@ public class RecomendacaoCorteDao {
     }
 
     public List<RecomendacaoCorte> listar() {
-        List<RecomendacaoCorte> lista = new ArrayList<>();
+        return listarComFiltro(null);
+    }
 
+    public List<RecomendacaoCorte> listarPorConsultoria(long consultoriaId) {
+        return listarComFiltro(consultoriaId);
+    }
+
+    private List<RecomendacaoCorte> listarComFiltro(Long consultoriaId) {
         String sql = """
                 SELECT ID_RECOMENDACAO_CORTE, ID_CONSULTORIA, ID_CORTE, JT_CORTE, DT_CORTE
                 FROM T_EM_RECOMENDACAO_CORTE
                 """;
-
+        if (consultoriaId != null) {
+            sql += " WHERE ID_CONSULTORIA = ? ORDER BY ID_RECOMENDACAO_CORTE";
+        }
+        List<RecomendacaoCorte> lista = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            while (rs.next()) {
-                RecomendacaoCorte recomendacao = new RecomendacaoCorte();
-
-                recomendacao.setId(rs.getLong("ID_RECOMENDACAO_CORTE"));
-
-                long idConsultoria = rs.getLong("ID_CONSULTORIA");
-                if (!rs.wasNull()) {
-                    ConsultoriaCapilar consultoria = new ConsultoriaCapilar();
-                    consultoria.setId(idConsultoria);
-                    recomendacao.setConsultoriaCapilar(consultoria);
-                }
-
-                long idCorte = rs.getLong("ID_CORTE");
-                if (!rs.wasNull()) {
-                    Corte corte = new Corte();
-                    corte.setId(idCorte);
-                    recomendacao.setCorte(corte);
-                }
-
-                recomendacao.setJustificativa(rs.getString("JT_CORTE"));
-
-                Timestamp timestamp = rs.getTimestamp("DT_CORTE");
-                if (timestamp != null) {
-                    recomendacao.setData(timestamp.toLocalDateTime());
-                }
-
-                lista.add(recomendacao);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            if (consultoriaId != null) {
+                stmt.setLong(1, consultoriaId);
             }
-
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
         } catch (SQLException e) {
             throw new ErroBancoDadosException("Erro ao listar recomendações de corte", e);
         }
-
         return lista;
+    }
+
+    private RecomendacaoCorte mapear(ResultSet rs) throws SQLException {
+        RecomendacaoCorte recomendacao = new RecomendacaoCorte();
+        recomendacao.setId(rs.getLong("ID_RECOMENDACAO_CORTE"));
+
+        long idConsultoria = rs.getLong("ID_CONSULTORIA");
+        if (!rs.wasNull()) {
+            ConsultoriaCapilar consultoria = new ConsultoriaCapilar();
+            consultoria.setId(idConsultoria);
+            recomendacao.setConsultoriaCapilar(consultoria);
+        }
+
+        long idCorte = rs.getLong("ID_CORTE");
+        if (!rs.wasNull()) {
+            Corte corte = new Corte();
+            corte.setId(idCorte);
+            recomendacao.setCorte(corte);
+        }
+
+        recomendacao.setJustificativa(rs.getString("JT_CORTE"));
+        Timestamp data = rs.getTimestamp("DT_CORTE");
+        if (data != null) {
+            recomendacao.setData(data.toLocalDateTime());
+        }
+        return recomendacao;
     }
 
     public RecomendacaoCorte buscar(long id) {
@@ -83,32 +94,7 @@ public class RecomendacaoCorteDao {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    RecomendacaoCorte recomendacao = new RecomendacaoCorte();
-
-                    recomendacao.setId(rs.getLong("ID_RECOMENDACAO_CORTE"));
-
-                    long idConsultoria = rs.getLong("ID_CONSULTORIA");
-                    if (!rs.wasNull()) {
-                        ConsultoriaCapilar consultoria = new ConsultoriaCapilar();
-                        consultoria.setId(idConsultoria);
-                        recomendacao.setConsultoriaCapilar(consultoria);
-                    }
-
-                    long idCorte = rs.getLong("ID_CORTE");
-                    if (!rs.wasNull()) {
-                        Corte corte = new Corte();
-                        corte.setId(idCorte);
-                        recomendacao.setCorte(corte);
-                    }
-
-                    recomendacao.setJustificativa(rs.getString("JT_CORTE"));
-
-                    Timestamp timestamp = rs.getTimestamp("DT_CORTE");
-                    if (timestamp != null) {
-                        recomendacao.setData(timestamp.toLocalDateTime());
-                    }
-
-                    return recomendacao;
+                    return mapear(rs);
                 }
             }
 

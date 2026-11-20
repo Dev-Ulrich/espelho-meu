@@ -32,8 +32,8 @@ public class CorCabeloDao {
                 """.formatted(incluirImagem ? ", RF_VISUAL" : "");
 
         try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 CorCabelo cor = new CorCabelo();

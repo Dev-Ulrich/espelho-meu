@@ -32,8 +32,8 @@ public class PenteadoDao {
                 """.formatted(incluirImagem ? ", IM_PENTEADO" : "");
 
         try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 Penteado penteado = new Penteado();

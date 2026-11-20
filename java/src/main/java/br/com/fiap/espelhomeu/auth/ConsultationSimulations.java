@@ -1,5 +1,7 @@
 package br.com.fiap.espelhomeu.auth;
 
+import br.com.fiap.espelhomeu.exception.RegraDeNegocioException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.support.SqlBinaryValue;
@@ -78,7 +80,7 @@ public class ConsultationSimulations {
         pending.removeAll(reserved);
         if (pending.isEmpty()) return progress;
         if (progress.used() + pending.size() > consultation.limit()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "A seleção ultrapassa o limite de prévias desta consulta.");
+            throw new RegraDeNegocioException("A seleção ultrapassa o limite de prévias desta consulta.");
         }
         if (!consent) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Confirme a autorização de envio da foto.");

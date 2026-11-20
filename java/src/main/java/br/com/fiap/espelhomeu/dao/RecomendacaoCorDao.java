@@ -30,8 +30,8 @@ public class RecomendacaoCorDao {
                 """;
 
         try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 RecomendacaoCor recomendacao = new RecomendacaoCor();

@@ -1,14 +1,67 @@
-# Domain Driven Design Using Java
+# Domain Driven Design Using Java — Espelho Meu
 
-Projeto Spring Boot da API do Espelho Meu. Mantenha o código, o arquivo de build e o Dockerfile nesta pasta.
+API Spring Boot do Espelho Meu. O front-end publicado chama a API por meio do proxy `/api/java`.
+
+- API no Render: https://espelho-meu-java.onrender.com/saude
+- Conexão com o Oracle: https://espelho-meu-java.onrender.com/saude/banco
+- Front-end: https://espelho-meu-two.vercel.app/
+- Pitch do projeto: https://youtu.be/KKLf9JBMcbI
+
+## Executar e testar
+
+Use JDK 21. A partir de `java/`, configure `DATABASE_URL`, `DATABASE_USERNAME` e
+`DATABASE_PASSWORD` para seu próprio esquema Oracle. Em um esquema novo,
+aplique `src/main/resources/criar.sql` e as migrações `001` e `002`, nessa ordem.
+Em um esquema existente, aplique apenas as migrações que faltam. O script base
+recria objetos, por isso deve ser executado somente em um esquema descartável.
+
+```sh
+./mvnw spring-boot:run
+./mvnw test
+```
+
+No Windows, use `mvnw.cmd`. Os testes automatizados usam H2 em modo Oracle.
+O Dockerfile separa a compilação Maven da imagem final com o JRE 21.
+Entradas de configuração são fornecidas pelo ambiente, sem credenciais no artefato.
+
+## Contrato REST da relação 1:N
+
+Uma consultoria capilar pode conter várias recomendações de corte. As rotas
+administrativas exigem sessão com role `ADMIN`. Envie o token retornado por
+`GET /auth/csrf` em requisições que alteram dados.
+
+| Método | Rota | Resultado |
+| --- | --- | --- |
+| GET | `/consultoriacapilar/{id}/recomendacoes` | 200 com as recomendações de corte da consultoria; 404 se ela não existir |
+| POST | `/consultoriacapilar/{id}/recomendacoes` | 201 e `Location: /recomendacaocorte/{id}` (URL absoluta); 400 para entrada inválida; 404 para vínculo inexistente; 409 para recomendação repetida |
+| GET | `/recomendacaocorte/{id}` | 200 com a recomendação cadastrada; 404 se ela não existir |
+| DELETE | `/consultoriacapilar/{id}` | 204 após remover; 404 se inexistente; 409 se houver registros dependentes |
+
+Exemplo de POST, para um corte que já existe no catálogo:
+
+```json
+{"corteId":7,"justificativa":"Compatível com as preferências da consulta"}
+```
+
+Exemplo de resposta 201:
+
+```json
+{"id":100,"consultoriaCapilarId":1,"corteId":7,"justificativa":"Compatível com as preferências da consulta","data":"2026-11-19T20:00:00"}
+```
+
+`RegraDeNegocioException` representa conflitos como e-mail duplicado e limite de
+pré-visualizações. O handler responde com JSON no formato `erro` e `detalhe`.
+O Oracle existente usa os identificadores `T_EM_*`, `ID_*` e `SQ_*` do modelo
+relacional do grupo. Os scripts preservam esses nomes para uso com a API e a
+base existente.
 
 ## Entrega no Portal
 
-Monte um ZIP com o projeto completo sem `target/`, o script de criação de tabelas e sequences, o PDF técnico e as instruções na raiz. Inclua os links da API no Render e do vídeo no YouTube. Use o arquivo de identificação do grupo na entrega oficial.
+Monte um ZIP com o projeto Java completo sem `target/`, os scripts Oracle, o
+PDF técnico e este README na raiz. Na cópia entregue, inclua a identificação
+oficial com os RMs e o link do vídeo de até 5 minutos exigido pela rubrica de Java.
 
 [Voltar ao índice](../README.md)
-
-
 
 ## Autenticação e consultoria
 
