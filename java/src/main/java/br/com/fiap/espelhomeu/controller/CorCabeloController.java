@@ -27,8 +27,8 @@ public class CorCabeloController {
     }
 
     @GetMapping
-    public List<DetalhesCorCabelo> listar()  {
-        return dao.listar()
+    public List<DetalhesCorCabelo> listar(@RequestParam(defaultValue = "true") boolean incluirImagem) {
+        return dao.listar(incluirImagem)
                 .stream()
                 .map(cor -> mapper.map(cor, DetalhesCorCabelo.class))
                 .toList();

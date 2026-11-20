@@ -20,12 +20,16 @@ public class PenteadoDao {
     }
 
     public List<Penteado> listar() {
+        return listar(true);
+    }
+
+    public List<Penteado> listar(boolean incluirImagem) {
         List<Penteado> lista = new ArrayList<>();
 
         String sql = """
-                SELECT ID_PENTEADO, NM_PENTEADO, DC_PENTEADO, IM_PENTEADO, NF_MANUTENCAO
+                SELECT ID_PENTEADO, NM_PENTEADO, DC_PENTEADO, NF_MANUTENCAO%s
                 FROM T_EM_PENTEADO
-                """;
+                """.formatted(incluirImagem ? ", IM_PENTEADO" : "");
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
@@ -37,7 +41,7 @@ public class PenteadoDao {
                 penteado.setId(rs.getLong("ID_PENTEADO"));
                 penteado.setNome(rs.getString("NM_PENTEADO"));
                 penteado.setDescricao(rs.getString("DC_PENTEADO"));
-                penteado.setImagem(rs.getBytes("IM_PENTEADO"));
+                if (incluirImagem) penteado.setImagem(rs.getBytes("IM_PENTEADO"));
                 penteado.setInformacaoManutencao(rs.getString("NF_MANUTENCAO"));
 
                 lista.add(penteado);

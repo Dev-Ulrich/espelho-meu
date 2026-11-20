@@ -3,7 +3,9 @@ package br.com.fiap.espelhomeu.dao;
 import br.com.fiap.espelhomeu.exception.EntidadeNaoEncontradaException;
 import br.com.fiap.espelhomeu.exception.ErroBancoDadosException;
 import br.com.fiap.espelhomeu.model.Usuario;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -150,21 +152,28 @@ public class UsuarioDao {
     }
 
     public void deletar(long id) {
-        String sql = "DELETE FROM T_EM_USUARIO WHERE ID_USUARIO = ?";
+        String sql = """
+                DELETE FROM T_EM_USUARIO
+                WHERE ID_USUARIO = ?
+                  AND NOT EXISTS (
+                      SELECT 1 FROM T_EM_CREDENCIAL c
+                      WHERE c.ID_USUARIO = T_EM_USUARIO.ID_USUARIO AND c.DS_ROLE = 'ADMIN'
+                  )
+                """;
 
+        int linhasAfetadas;
         try (Connection conexao = dataSource.getConnection();
              PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
-
-            int linhasAfetadas = stmt.executeUpdate();
-
-            if (linhasAfetadas == 0) {
-                throw new EntidadeNaoEncontradaException("Usuario não encontrado.");
-            }
-
+            linhasAfetadas = stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new ErroBancoDadosException("Erro ao atualizar o Usuario.", e);
+            throw new ErroBancoDadosException("Erro ao excluir o Usuario.", e);
+        }
+
+        if (linhasAfetadas == 0) {
+            buscar(id);
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Contas administrativas não podem ser excluídas pelo painel.");
         }
     }
 }

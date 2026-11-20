@@ -78,6 +78,14 @@ class EspelhomeuApplicationTests {
         mvc.perform(get("/auth/sessao").session(session))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.role").value("USER"));
         mvc.perform(get("/usuario").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/auth/admin/usuarios")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/auth/admin/resumo")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/auth/admin/usuarios").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/auth/admin/resumo").session(session)).andExpect(status().isForbidden());
+        mvc.perform(post("/auth/admin/usuarios").with(csrf()).session(session)
+                .contentType("application/json").content(cadastro)).andExpect(status().isForbidden());
+        mvc.perform(get("/corcabelo").session(session)).andExpect(status().isForbidden());
+        mvc.perform(get("/maquiagem").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/produto").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/corte").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/penteado").session(session)).andExpect(status().isForbidden());
@@ -87,6 +95,30 @@ class EspelhomeuApplicationTests {
                 .andExpect(status().isServiceUnavailable());
         jdbc.update("UPDATE T_EM_CREDENCIAL SET DS_ROLE = 'ADMIN'");
         mvc.perform(get("/usuario").session(session)).andExpect(status().isOk());
+        jdbc.update("""
+                INSERT INTO T_EM_USUARIO VALUES (99, 'Conta legada', 'legada@example.com',
+                    DATE '2000-01-01', NULL, 'Inativo')
+                """);
+        mvc.perform(post("/auth/admin/usuarios").with(csrf()).session(session)
+                .contentType("application/json").content(cadastro.replace("pessoa@", "nova@")))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.role").value("USER"));
+        mvc.perform(get("/auth/admin/usuarios").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("Inativo"))
+                .andExpect(jsonPath("$[0].role").doesNotExist())
+                .andExpect(jsonPath("$[1].email").value("nova@example.com"))
+                .andExpect(jsonPath("$[2].role").value("ADMIN"))
+                .andExpect(jsonPath("$[2].hash").doesNotExist());
+        for (String table : new String[] {"T_EM_CORTE", "T_EM_PENTEADO", "T_EM_COR", "T_EM_PRODUTO", "T_EM_MAQUIAGEM"}) {
+            jdbc.execute("CREATE TABLE IF NOT EXISTS " + table + " (ID NUMBER PRIMARY KEY)");
+        }
+        jdbc.update("INSERT INTO T_EM_COR (ID) VALUES (1)");
+        mvc.perform(get("/auth/admin/resumo").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.usuarios").value(3))
+                .andExpect(jsonPath("$.cores").value(1))
+                .andExpect(jsonPath("$.maquiagem").value(0));
+        mvc.perform(delete("/usuario/1").with(csrf()).session(session)).andExpect(status().isConflict());
         mvc.perform(get("/consultoria/cabelo/questionario").session(session)).andExpect(status().isForbidden());
         mvc.perform(get("/consultoria/maquiagem/questionario").session(session)).andExpect(status().isForbidden());
         mvc.perform(post("/auth/logout").with(csrf()).session(session)).andExpect(status().isNoContent());

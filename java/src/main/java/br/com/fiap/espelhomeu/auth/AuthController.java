@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,6 +48,16 @@ public class AuthController {
     public ResponseEntity<AuthService.Account> register(@RequestBody @Valid Registration body) {
         return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore())
                 .body(auth.register(body.nome(), body.email(), body.dataNascimento(), body.telefone(), body.senha()));
+    }
+
+    @GetMapping("/admin/resumo")
+    public ResponseEntity<AuthService.AdminSummary> adminSummary() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(auth.summarizeCatalog());
+    }
+
+    @GetMapping("/admin/usuarios")
+    public ResponseEntity<List<AuthService.AdminUser>> listUsers() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(auth.listUsers());
     }
 
     @PostMapping("/admin/usuarios")

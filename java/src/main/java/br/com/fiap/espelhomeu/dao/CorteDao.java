@@ -20,12 +20,16 @@ public class CorteDao {
     }
 
     public List<Corte> listar() {
+        return listar(true);
+    }
+
+    public List<Corte> listar(boolean incluirImagem) {
         List<Corte> lista = new ArrayList<>();
 
         String sql = """
-                SELECT ID_CORTE, NM_CORTE, DC_CORTE, IM_CORTE, NF_MANUTENCAO
+                SELECT ID_CORTE, NM_CORTE, DC_CORTE, NF_MANUTENCAO%s
                 FROM T_EM_CORTE
-                """;
+                """.formatted(incluirImagem ? ", IM_CORTE" : "");
 
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement();
@@ -37,7 +41,7 @@ public class CorteDao {
                 corte.setId(rs.getLong("ID_CORTE"));
                 corte.setNome(rs.getString("NM_CORTE"));
                 corte.setDescricao(rs.getString("DC_CORTE"));
-                corte.setImagem(rs.getBytes("IM_CORTE"));
+                if (incluirImagem) corte.setImagem(rs.getBytes("IM_CORTE"));
                 corte.setInformacaoManutencao(rs.getString("NF_MANUTENCAO"));
 
                 lista.add(corte);

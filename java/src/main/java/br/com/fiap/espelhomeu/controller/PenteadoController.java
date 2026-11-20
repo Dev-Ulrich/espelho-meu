@@ -27,8 +27,8 @@ public class PenteadoController {
     }
 
     @GetMapping
-    public List<DetalhesPenteado> listar()  {
-        return dao.listar()
+    public List<DetalhesPenteado> listar(@RequestParam(defaultValue = "true") boolean incluirImagem) {
+        return dao.listar(incluirImagem)
                 .stream()
                 .map(penteado -> mapper.map(penteado, DetalhesPenteado.class))
                 .toList();
