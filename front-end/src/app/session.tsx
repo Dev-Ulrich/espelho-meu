@@ -62,6 +62,5 @@ export function RequireSession({ admin = false }: { admin?: boolean }) {
     <h1>Acesso restrito</h1><p>Esta área exige permissão de administrador.</p>
     <Link to={paths.conta}>Voltar à minha conta</Link>
   </section>;
-  if (!admin && state.user.role === 'ADMIN') return <Navigate to={paths.admin} replace />;
   return <Outlet />;
 }
